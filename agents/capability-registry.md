@@ -145,6 +145,16 @@ Você não executa tarefas — você responde perguntas sobre capacidades.
 | **Ordem** | Antes do solution-architect — o "o quê" antes do "como" |
 | **Risco** | Usar SA antes do FSA leva a arquitetura técnica sem validação regulatória |
 
+**Critério de roteamento — pai vs sub-agente:**
+
+| Condição da demanda | Roteamento correto |
+|---|---|
+| Cruza mais de um domínio (ex: CCB + PIX + garantias) | FSA primeiro — ele mapeia o ecossistema inteiro |
+| Domínio único e bem identificado pelo usuário (ex: "estruturar cláusulas da CCB") | Direto ao sub-agente (ccb-structuring-engine) |
+| Não está claro se é CCB, ledger ou PIX | FSA primeiro — ele classifica e delega |
+| Requer visão de risco regulatório cruzado (ex: impacto de resolução BACEN em múltiplos produtos) | FSA primeiro |
+| Questão técnica pontual dentro do domínio (ex: "quais campos obrigatórios da CCB?") | Direto ao sub-agente |
+
 #### solution-architect
 | Dimensão | Detalhe |
 |---|---|
@@ -207,6 +217,15 @@ Você não executa tarefas — você responde perguntas sobre capacidades.
 | **Sub-agentes** | mdr-pricing-analyst, pnl-modeler |
 | **Usar quando** | Demanda de economics com visão ampla; sub-agentes para profundidade específica |
 
+**Critério de roteamento — pai vs sub-agente:**
+
+| Condição da demanda | Roteamento correto |
+|---|---|
+| Precisa de MDR + P&L juntos (ex: "qual o impacto do cap PAT no meu P&L?") | PEA primeiro — ele integra os dois |
+| Exclusivamente sobre decomposição MDR, tabela interchange ou benchmark competitivo | Direto ao mdr-pricing-analyst |
+| Exclusivamente sobre P&L, unit economics, LTV/CAC ou breakeven | Direto ao pnl-modeler |
+| Não está claro se é questão de pricing ou de viabilidade econômica | PEA primeiro |
+
 #### mdr-pricing-analyst
 | Dimensão | Detalhe |
 |---|---|
@@ -226,6 +245,20 @@ Você não executa tarefas — você responde perguntas sobre capacidades.
 |---|---|
 | **Faz** | KPIs de produto, analytics strategy, dashboards executivos, cohort analysis, BI |
 | **Não faz** | Não modela P&L nem pricing (isso é do PEA e sub-agentes) |
+
+---
+
+### Camada de Frontend
+
+#### frontend-developer
+| Dimensão | Detalhe |
+|---|---|
+| **Faz** | HTML/CSS/JS vanilla no Sprint Board Opea; implementa fixes, features e ajustes com restrições do arquivo embutidas |
+| **Não faz** | Não define arquitetura; não valida conformidade regulatória; não escreve testes |
+| **Pré-condição** | Lê `playbook-html-fix.md` + `context/business/opea.md` + executa Passo 0 antes de qualquer código |
+| **Restrições embutidas** | `window.*` para globais; `srcdoc` para iframes; `data` global como fonte autoritativa; `MODULES.label` não `.name`; validação de IDs contra lista ativa |
+| **Quando escalar** | Mais de 2 funções interdependentes → Orchestrator reclassifica para balanced; impacto em modo cliente → autorização obrigatória |
+| **Diferença do genérico** | Agente customizado com conhecimento do Sprint Board embutido — não depende de prompt perfeito para respeitar as restrições |
 
 ---
 

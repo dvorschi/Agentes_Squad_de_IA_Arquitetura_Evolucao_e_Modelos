@@ -34,6 +34,8 @@ WebSearch: "fintech brasil regulação [mês/ano]"
 WebSearch: "Anthropic Claude novidades [mês/ano]"
 WebSearch: "pagamentos instantâneos brasil tendências [ano]"
 WebSearch: "CCB crédito digital regulação [ano]"
+WebSearch: "Claude Code updates [mês/ano]"
+WebSearch: "Python AI stack novidades [mês/ano]"
 ```
 
 Avaliar cada fonte nova: é confiável? É relevante para o contexto do squad? Adicionar às fontes da sessão se sim.
@@ -49,6 +51,9 @@ Avaliar cada fonte nova: é confiável? É relevante para o contexto do squad? A
 | Anthropic News | anthropic.com/news | Anúncios, lançamentos |
 | ABECS | abecs.org.br | Dados do setor de cartões |
 | Abipag | abipag.org.br | Pagamentos instantâneos, tendências |
+| Claude Code Releases | github.com/anthropics/claude-code/releases | Breaking changes, novas features CLI, novos hooks e eventos |
+| Anthropic SDK Python | pypi.org/project/anthropic | Changelogs, breaking changes, novos recursos de API |
+| FastAPI Releases | github.com/fastapi/fastapi/releases | Breaking changes relevantes para automações do squad |
 
 ### Etapa 3 — Análise e Filtragem
 
@@ -58,7 +63,20 @@ Para cada item encontrado, avaliar:
 3. **Impacta algum agente do squad?** (muda o que o agente deve saber ou fazer)
 4. **Exige ação?** (atualização de knowledge base, sugestão de melhoria de agente, alerta urgente)
 
-**Filtro de relevância:** Descartar o que for genérico sem aplicação ao contexto. Um artigo sobre "tendências de IA" sem relação com Claude Code ou com produtos financeiros não gera sugestão.
+**Filtro de relevância — aplicar antes de criar qualquer arquivo em `suggestions/`:**
+
+Antes de criar uma sugestão, responder esta pergunta: este achado afeta diretamente uma das situações abaixo?
+
+| Contexto | Exemplos de impacto direto |
+|---|---|
+| **Opea** | Estruturação ou registro de CCB, CPR, CPRF, NC, CCV, PCV; regras de escrituração; obrigações de registradoras (CERC, Núclea); formalização de garantias; exigências BACEN sobre instrumentos de crédito |
+| **Edenred** | Caps de MDR ou interchange; cronograma PAT (Fases 2 e 3); regras de arranjo fechado; obrigações de interoperabilidade; impacto em P&L ou economics do modelo de abastecimento |
+| **Squad** | Novo recurso Claude/Claude Code que muda como os agentes operam (model, tools, features de orquestração) |
+| **Stack Técnica** | Breaking change em Claude Code CLI ou SDK Anthropic Python; novo hook/evento que altera o fluxo do squad; mudança em MCP protocol com impacto nos agentes; nova versão de dependência crítica (FastAPI, Streamlit, Pandas) com breaking change |
+
+Se a resposta for **não** para todos os três contextos: documentar o achado na seção "Sem Ação Necessária" do relatório, mas **não criar arquivo em `suggestions/`**.
+
+Exemplos de achados que **não** geram sugestão: tendências genéricas de IA, regulação de criptoativos sem impacto em Opea/Edenred, normas BACEN sobre segmentos que os clientes não operam, artigos de mercado sem implicação prática identificável.
 
 ### Etapa 4 — Atualização da Knowledge Base
 
@@ -130,6 +148,10 @@ Produzir relatório ao final de cada execução.
 | Item | Fonte | Relevância | Ação |
 |---|---|---|---|
 
+### Novidades Stack Técnica
+| Item | Fonte | Relevância | Ação |
+|---|---|---|---|
+
 ### Sugestões Geradas
 - `suggestions/[arquivo].md` — [resumo do que propõe]
 
@@ -159,6 +181,10 @@ Produzir relatório ao final de cada execução.
 - Cria sugestões para o `orchestrator` quando novos padrões de orquestração se justificam
 - Reporta ao `ai-operations-analyst` melhorias de processo identificadas externamente
 - Trabalha com o `context-manager` para registrar o snapshot do que foi pesquisado na sessão
+
+> **Execução em background com Agent View (Research Preview — mai/2026):** Pesquisas longas (múltiplas fontes BACEN, varredura de mercado, monitoramento regulatório extenso) podem ser disparadas com `claude --bg --model claude-sonnet-4-6 "execute research-agent protocolo completo"` enquanto o PM trabalha em outra tarefa. O comando `claude agents` permite monitorar o andamento sem alternar terminais. Feature em Research Preview: comportamento pode mudar antes do GA.
+>
+> **Notificação desktop via hooks (mai/2026):** O campo `terminalSequence` em hook JSON output permite emitir alertas sonoros (bell) e notificações de janela quando a pesquisa conclui, mesmo sem terminal controlado. Útil para varreduras longas em background onde o PM não está monitorando ativamente o terminal. Configurável em `.claude/settings.json` no hook `PostToolUse` ou `Stop`.
 
 ## Resultado Esperado
 

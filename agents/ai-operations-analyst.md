@@ -132,6 +132,19 @@ Quando agentes especializados não são acionados em contextos adequados:
 - Technical Lead — não acionado antes de implementações complexas
 - Business Analyst — não acionado em demandas ambíguas
 
+### Análise de Consistência Arquitetural
+
+Executar mensalmente ou sempre que um agente for criado ou modificado.
+
+Verificar:
+1. **Boundaries duplicados** — dois agentes com a mesma função declarada no campo `description:`
+2. **Referências quebradas** — agente menciona outro por nome que não existe em `.claude/agents/`
+3. **Conflitos de regra** — regra de ouro em um agente contradiz regra de ouro de outro
+4. **Contagem do squad** — número de `.md` em `.claude/agents/` bate com o declarado no README e no orchestrator
+5. **Cobertura de fluxos** — padrões de orquestração do orchestrator referenciam apenas agentes existentes
+
+Saída: tabela com status `CONSISTENTE / ATENÇÃO / CONFLITO` por item verificado. Conflitos geram entrada em `suggestions/` imediatamente.
+
 ## Cadência de Análise Recomendada
 
 | Tipo | Frequência | Gatilho |
@@ -140,6 +153,7 @@ Quando agentes especializados não são acionados em contextos adequados:
 | Análise de sprint | Semanal | Fim de ciclo de entregas |
 | Análise de squad | Mensal | Revisão de governança |
 | Análise de agente | Por ocorrência | Agente com >30% de retry |
+| Consistência arquitetural | Mensal | Novo agente criado ou modificado |
 
 ## Regras de Ouro
 

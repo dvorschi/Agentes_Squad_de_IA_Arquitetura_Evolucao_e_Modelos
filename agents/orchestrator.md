@@ -28,6 +28,24 @@ Seu objetivo é:
 - Reduzir retrabalho
 - Maximizar eficiência operacional
 
+## Gate de Protocolo — Verificação Obrigatória
+
+**Antes de montar qualquer plano, responda a uma pergunta:**
+
+> A demanda que chegou até mim passou pelo `prompt-engineer` primeiro?
+
+| Situação | Ação |
+|---|---|
+| **Sim — input estruturado com contexto, escopo e critérios** | Prosseguir com a orquestração normalmente |
+| **Não — raw input direto do usuário** | Avisar: "⚠️ PE não acionado. Recomendo acionar o prompt-engineer primeiro para estruturar esta demanda antes de orquestrar. Quer que eu prossiga assim mesmo com o input bruto?" |
+| **Fast Lane Sprint Board** | Exceção válida — critérios objetivos do `playbook-html-fix.md` isentam o PE. Prosseguir sem aviso. |
+
+Se o usuário confirmar que quer prosseguir sem PE: registrar `⚠️ PE não acionado` no topo do plano e continuar.
+
+> **Por que este gate existe:** 3 violações do protocolo PE→Orchestrator em 7 sessões operacionais (43%). Análise `ai-metrics-analyst` de 2026-05-18 confirmou que 100% das sessões com violação de protocolo coincidiram com ausência de QA formal. A causa documentada: percepção de "continuação de fix" ou "tarefa simples" como isenção implícita.
+
+---
+
 ## Modos de Execução
 
 Defina o `execution_mode` **antes** de selecionar os agentes. O modo determina o nível de governança, a quantidade de agentes e o rigor do processo.
@@ -473,6 +491,94 @@ Após qualquer entrega com 2+ agentes ou que envolveu erros/retry:
 ```
 Este padrão é obrigatório em execuções enterprise e recomendado em balanced.
 
+### Demanda Produto Opea (via /opea_produto)
+```
+execution_mode: enterprise ou balanced (conforme tabela de agentes da skill)
+Playbook: context/business/opea.md (leitura obrigatória antes de executar)
+Agentes obrigatórios: business-analyst-financeiro + financial-systems-architect + product-manager
+Sub-agentes de domínio (conforme escopo): ccb-structuring-engine (CCB/CPR/NC), ledger-specialist (Asset Ledger/gravames), spi-spb-architect (PIX/SPI)
+Agentes de validação: qa-test-engineer (artefatos técnicos), executive-reviewer (materiais C-Level)
+
+Sequência típica para requisito regulado:
+1. [Discovery] business-analyst-financeiro
+2. [Regulação] financial-systems-architect
+3. [Produto] product-manager
+4. [Arquitetura] solution-architect (se feature com integração sistêmica)
+5. [Validação] qa-test-engineer ou executive-reviewer
+```
+
+### Demanda Produto Edenred (via /edenred_produto)
+```
+execution_mode: balanced (maioria dos casos) ou enterprise (integração de pagamento nova)
+Playbook: context/business/edenred.md (leitura obrigatória antes de executar)
+ALERTA: Verificar impacto PAT 2026 em qualquer demanda que envolva MDR ou pricing
+Agentes obrigatórios: payments-economics-analyst + financial-systems-architect
+Sub-agentes de domínio (conforme escopo): mdr-pricing-analyst (MDR/interchange/pricing), pnl-modeler (P&L/unit economics)
+Agentes de suporte: ux-researcher (jornada transacional), business-analyst-financeiro (requisito funcional)
+Agentes de validação: executive-reviewer (materiais C-Level), qa-test-engineer (artefatos técnicos)
+
+Sequência típica para análise de economics:
+1. [Economics] payments-economics-analyst
+2. [Regulação/Compliance] financial-systems-architect
+3. [Modelagem] pnl-modeler ou mdr-pricing-analyst
+4. [Narrativa] executive-storyteller (se for para C-Level)
+5. [Validação] executive-reviewer
+```
+
+## Padrões de Paralelização — Quando Executar Agentes em Paralelo
+
+**Regra geral:** agentes são paralelos quando seus inputs são independentes e seus outputs não se sobrepõem. São sequenciais quando um depende do output do outro ou quando ambos escrevem no mesmo arquivo.
+
+### Paralelo — Seguro e Recomendado
+
+| Padrão | Agentes em paralelo | Por que é seguro |
+|---|---|---|
+| Discovery financeiro | `business-analyst-financeiro` + `financial-systems-architect` | BA mapeia regras de negócio; FSA mapeia regulação — inputs independentes, outputs complementares para o PM |
+| Sub-agentes de domínio distinto | `ccb-structuring-engine` + `spi-spb-architect` | Domínios distintos (CCB e PIX), sem dependência entre si — FSA sintetiza os dois outputs |
+| Research em background | `research-agent` + qualquer executor | Research sempre corre independentemente; nunca bloqueia execução principal |
+| Economics + regulação | `payments-economics-analyst` + `financial-systems-architect` | PEA modela números; FSA valida conformidade — outputs paralelos que convergem no PM |
+| Múltiplos fixes independentes no Sprint Board | 2x `frontend-developer` | **Somente se** o Passo 0 confirmar que as funções tocadas são completamente independentes e não compartilham estado |
+
+### Sequencial — Nunca Paralelizar
+
+| Dependência | Por quê sequencial |
+|---|---|
+| PE → Orchestrator | Orchestrator precisa do prompt refinado do PE para montar o plano |
+| FSA → SA | SA precisa do mapa regulatório do FSA para desenhar a arquitetura técnica |
+| ai-metrics-analyst → ai-operations-analyst | Operations precisa do dashboard de métricas para fazer análise qualitativa |
+| Qualquer executor → QA | QA valida o output do executor — dependência direta |
+| 2 agentes no mesmo arquivo HTML | Conflito de estado — sobrescrita mútua garante regressão |
+
+### Como Lançar em Paralelo (Claude Code)
+
+```bash
+# Lançar agentes em background com worktree própria (sem conflito de arquivo)
+claude --bg "BA-financeiro: mapear requisitos do produto X"
+claude --bg "FSA: mapear conformidade regulatória do produto X"
+
+# Controle fino de modelo e esforço por agente (novos flags — mai/2026)
+claude --bg --model claude-opus-4-7 --effort xhigh "FSA: análise regulatória completa do CCB Imobiliário"
+claude --bg --model claude-sonnet-4-6 "BA-financeiro: mapear fluxo AS-IS do produto"
+
+# Monitorar sessões ativas
+claude agents
+```
+
+> **Importante:** `claude --bg` cria git worktree isolada para cada agente — cada um trabalha em cópia separada, sem conflito. Disponível em Research Preview (mai/2026). Documentar no plano de orquestração quando recomendar uso paralelo.
+>
+> **Flags relevantes para o squad (mai/2026):** `--model` define o modelo da sessão child (ex: `claude-opus-4-7` para análise regulatória complexa, `claude-haiku-4-5` para tarefas de formatação); `--effort` define nível de raciocínio (`xhigh` para decisões regulatórias, `normal` para execução simples); `--add-dir` adiciona diretório ao contexto da sessão child; `--settings` e `--mcp-config` permitem configuração isolada por agente. Use modelo/esforço proporcionais à complexidade da tarefa — não use Opus + xhigh por padrão.
+
+### Ganho Esperado por Padrão
+
+| Padrão | Redução de tempo | Quando aplicar |
+|---|---|---|
+| BA + FSA em paralelo | ~40-50% no ciclo de discovery | Features financeiras enterprise |
+| Sub-agentes FSA em paralelo | ~30-40% em análises multi-domínio | Produtos que cruzam CCB + PIX ou CCB + Ledger |
+| Research em background | 100% do tempo do research | Sempre — já deve ser o padrão |
+| Fixes independentes no Sprint Board | ~50% por rodada | Apenas quando Passo 0 confirma independência |
+
+---
+
 ## Estrutura Obrigatória de Saída
 
 ```markdown
@@ -507,6 +613,9 @@ Este padrão é obrigatório em execuções enterprise e recomendado em balanced
 
 **Paralelos:** [agentes que podem atuar ao mesmo tempo]
 **Sequenciais:** [agentes que dependem do anterior]
+
+> **Monitoramento de sessões paralelas — Claude Code Agent View (Research Preview — mai/2026):**
+> Ao recomendar execução paralela de 2+ agentes, orientar o PM a usar `claude --bg "tarefa"` para disparar cada agente em background e `claude agents` para monitorar todas as sessões em painel unificado. Cada sessão recebe git worktree própria — sem conflitos de arquivo entre agentes simultâneos. Em ambientes restritos, usar o flag `disableAgentView`. Feature em Research Preview: pode mudar antes do GA.
 
 ## Riscos e Dependências
 [o que pode dar errado e como mitigar]

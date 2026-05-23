@@ -8,7 +8,7 @@ Desenvolvido para PMs, Product Leads e consultores de produto que atuam em banco
 
 ## O que é este squad
 
-**25 agentes especializados** organizados em camadas: inteligência, produto, arquitetura financeira, economics, qualidade, memória e operação. Cada agente tem domínio claro e boundaries definidos. O Orchestrator decide qual agente (ou combinação) atende cada demanda.
+**27 agentes especializados** organizados em camadas: inteligência, produto, arquitetura financeira, economics, qualidade, memória e operação. Cada agente tem domínio claro e boundaries definidos. O Orchestrator decide qual agente (ou combinação) atende cada demanda.
 
 ### Agentes incluídos
 
@@ -27,6 +27,7 @@ Desenvolvido para PMs, Product Leads e consultores de produto que atuam em banco
 | `business-analyst-financeiro` | Discovery, AS-IS/TO-BE, regras de negócio, refinamento |
 | `executive-storyteller` | Decks C-Level, board presentations, executive summaries |
 | `executive-reviewer` | Validação final pré-cliente ou C-Level |
+| `ux-researcher` | Pesquisa qualitativa, jornadas, personas e discovery com usuários |
 
 **Arquitetura Financeira (+ sub-agentes)**
 | Agente | Especialidade |
@@ -45,6 +46,11 @@ Desenvolvido para PMs, Product Leads e consultores de produto que atuam em banco
 | `mdr-pricing-analyst` | Decomposição MDR, interchange, caps PAT, benchmarks |
 | `pnl-modeler` | P&L multi-cenário, breakeven, LTV/CAC, análise de sensibilidade |
 | `data-product-strategist` | KPIs, dashboards executivos, analytics de produto |
+
+**Execução**
+| Agente | Especialidade |
+|---|---|
+| `frontend-developer` | Sprint Board HTML, CSS, JavaScript — artefatos visuais standalone |
 
 **Qualidade**
 | Agente | Especialidade |
@@ -83,7 +89,7 @@ Desenvolvido para PMs, Product Leads e consultores de produto que atuam em banco
 chmod +x install.sh && ./install.sh
 ```
 
-O instalador copia os 25 agentes para `~/.claude/agents/` e a estrutura de contexto para o diretório do projeto.
+O instalador copia os 27 agentes para `~/.claude/agents/` e a estrutura de contexto para o diretório do projeto.
 
 Veja `INSTALL.md` para instalação manual passo a passo.
 
@@ -92,7 +98,7 @@ Veja `INSTALL.md` para instalação manual passo a passo.
 ## Estrutura de arquivos
 
 ```
-agents/              → 25 agentes Claude Code
+agents/              → 27 agentes Claude Code
 context/
   business/          → briefing dos seus produtos (preencher)
   regulatory/        → normas BACEN (informação pública)
@@ -123,7 +129,7 @@ CLAUDE.md            → instruções para o Claude Code neste projeto
 
 ## Documentação completa
 
-Ver `Documentacao_Claude/squad-arquitetura-e-evolucao.md` — arquitetura, fluxo, modos de execução, catálogo completo e histórico de evolução v1.0 → v1.8.
+Ver `Documentacao_Claude/squad-arquitetura-e-evolucao.md` — arquitetura, fluxo, modos de execução, catálogo completo e histórico de evolução v1.0 → v1.9.
 
 ---
 

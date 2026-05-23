@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Squad de IA — Financial Product Copilot | BRQ Digital Solutions</title>
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1e2d45;
+    --accent: #3b82f6;
+    --accent2: #6366f1;
+    --green: #10b981;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --purple: #8b5cf6;
+    --cyan: #06b6d4;
+    --text: #f1f5f9;
+    --text2: #94a3b8;
+    --text3: #64748b;
+    --opus: #f59e0b;
+    --sonnet: #3b82f6;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 14px; }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 24px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .header-left h1 { font-size: 22px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
+  .header-left h1 span { color: var(--accent); }
+  .header-left p { color: var(--text2); font-size: 12px; margin-top: 4px; }
+  .header-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+  .badge {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 20px; padding: 4px 12px; font-size: 11px; font-weight: 600;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .badge-blue .badge-dot { background: var(--accent); }
+  .badge-green .badge-dot { background: var(--green); }
+  .badge-amber .badge-dot { background: var(--amber); }
+  .badge-purple .badge-dot { background: var(--purple); }
+
+  /* NAV */
+  .nav {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    display: flex; overflow-x: auto; padding: 0 32px;
+  }
+  .nav::-webkit-scrollbar { height: 3px; }
+  .nav::-webkit-scrollbar-track { background: var(--surface); }
+  .nav::-webkit-scrollbar-thumb { background: var(--border); }
+  .nav-item {
+    padding: 14px 18px; font-size: 13px; font-weight: 500; color: var(--text2);
+    cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap;
+    transition: all 0.2s; user-select: none;
+  }
+  .nav-item:hover { color: var(--text); }
+  .nav-item.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* MAIN */
+  .main { padding: 28px 32px; max-width: 1400px; }
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* SECTION TITLES */
+  .section-title {
+    font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 6px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-title .icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+  }
+  .section-subtitle { color: var(--text2); font-size: 13px; margin-bottom: 24px; }
+
+  /* GRID */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+  /* CARDS */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px;
+  }
+  .card-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .card-body { color: var(--text2); font-size: 12px; line-height: 1.6; }
+
+  /* STATS */
+  .stats-row { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px 24px; flex: 1; min-width: 140px;
+  }
+  .stat-card .num { font-size: 32px; font-weight: 800; line-height: 1; margin-bottom: 4px; }
+  .stat-card .label { color: var(--text2); font-size: 12px; }
+  .num-blue { color: var(--accent); }
+  .num-green { color: var(--green); }
+  .num-amber { color: var(--amber); }
+  .num-purple { color: var(--purple); }
+  .num-cyan { color: var(--cyan); }
+
+  /* AGENT CARDS */
+  .agents-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+  .agent-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px; transition: border-color 0.2s;
+  }
+  .agent-card:hover { border-color: var(--accent2); }
+  .agent-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
+  .agent-name { font-size: 13px; font-weight: 700; color: var(--text); font-family: 'Courier New', monospace; }
+  .agent-model {
+    font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px;
+    white-space: nowrap;
+  }
+  .model-opus { background: rgba(245,158,11,0.15); color: var(--opus); border: 1px solid rgba(245,158,11,0.3); }
+  .model-sonnet { background: rgba(59,130,246,0.15); color: var(--sonnet); border: 1px solid rgba(59,130,246,0.3); }
+  .agent-desc { color: var(--text2); font-size: 11.5px; line-height: 1.55; }
+  .agent-layer {
+    display: inline-block; margin-top: 10px; font-size: 10px; font-weight: 600;
+    padding: 2px 8px; border-radius: 4px;
+  }
+  .layer-intel { background: rgba(139,92,246,0.15); color: #a78bfa; }
+  .layer-produto { background: rgba(16,185,129,0.15); color: #34d399; }
+  .layer-memoria { background: rgba(6,182,212,0.15); color: #22d3ee; }
+  .layer-arq { background: rgba(245,158,11,0.15); color: #fbbf24; }
+  .layer-econ { background: rgba(59,130,246,0.15); color: #60a5fa; }
+  .layer-qa { background: rgba(239,68,68,0.15); color: #f87171; }
+  .layer-sub { background: rgba(99,102,241,0.15); color: #a5b4fc; }
+
+  /* LAYER DIAGRAM */
+  .arch-diagram { display: flex; flex-direction: column; gap: 10px; }
+  .arch-layer {
+    border-radius: 10px; padding: 16px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    border: 1px solid;
+  }
+  .arch-layer-intel { background: rgba(139,92,246,0.08); border-color: rgba(139,92,246,0.3); }
+  .arch-layer-produto { background: rgba(16,185,129,0.08); border-color: rgba(16,185,129,0.3); }
+  .arch-layer-arq { background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.3); }
+  .arch-layer-econ { background: rgba(59,130,246,0.08); border-color: rgba(59,130,246,0.3); }
+  .arch-layer-exec { background: rgba(100,116,139,0.08); border-color: rgba(100,116,139,0.3); }
+  .arch-layer-qa { background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.3); }
+  .arch-layer-mem { background: rgba(6,182,212,0.08); border-color: rgba(6,182,212,0.3); }
+  .arch-layer-title { font-weight: 700; font-size: 13px; }
+  .arch-layer-agents { color: var(--text2); font-size: 12px; }
+  .arch-arrow { text-align: center; color: var(--text3); font-size: 18px; margin: -4px 0; }
+
+  /* FLOW */
+  .flow-steps { display: flex; flex-direction: column; gap: 0; }
+  .flow-step {
+    display: flex; align-items: flex-start; gap: 16px; padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .flow-step:last-child { border-bottom: none; }
+  .flow-num {
+    width: 28px; height: 28px; border-radius: 50%; background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; flex-shrink: 0; margin-top: 2px;
+  }
+  .flow-content .flow-title { font-weight: 700; font-size: 13px; color: var(--text); margin-bottom: 4px; }
+  .flow-content .flow-desc { color: var(--text2); font-size: 12px; line-height: 1.5; }
+
+  /* TABLE */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .data-table th {
+    background: var(--surface2); text-align: left; padding: 10px 14px;
+    color: var(--text2); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border);
+  }
+  .data-table td {
+    padding: 10px 14px; border-bottom: 1px solid var(--border);
+    vertical-align: top; line-height: 1.5;
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
+
+  /* TAGS */
+  .tag {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 10px; font-weight: 600; margin: 1px;
+  }
+  .tag-blue { background: rgba(59,130,246,0.15); color: #60a5fa; }
+  .tag-green { background: rgba(16,185,129,0.15); color: #34d399; }
+  .tag-amber { background: rgba(245,158,11,0.15); color: #fbbf24; }
+  .tag-red { background: rgba(239,68,68,0.15); color: #f87171; }
+  .tag-purple { background: rgba(139,92,246,0.15); color: #a78bfa; }
+  .tag-cyan { background: rgba(6,182,212,0.15); color: #22d3ee; }
+  .tag-gray { background: rgba(100,116,139,0.15); color: #94a3b8; }
+
+  /* TIMELINE */
+  .timeline { position: relative; padding-left: 20px; }
+  .timeline::before {
+    content: ''; position: absolute; left: 7px; top: 0; bottom: 0;
+    width: 2px; background: var(--border);
+  }
+  .tl-item { position: relative; margin-bottom: 24px; }
+  .tl-dot {
+    position: absolute; left: -16px; top: 4px;
+    width: 10px; height: 10px; border-radius: 50%; background: var(--accent);
+    border: 2px solid var(--bg);
+  }
+  .tl-dot-major { background: var(--amber); }
+  .tl-version { font-size: 11px; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+  .tl-version-major { color: var(--amber); }
+  .tl-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .tl-desc { color: var(--text2); font-size: 12px; line-height: 1.5; }
+
+  /* SECTION DIVIDER */
+  .divider { height: 1px; background: var(--border); margin: 24px 0; }
+
+  /* PROJECT CARDS */
+  .project-card {
+    background: var(--surface); border-radius: 12px; overflow: hidden; margin-bottom: 24px;
+  }
+  .project-header {
+    padding: 20px 24px; display: flex; align-items: center; gap: 12px;
+  }
+  .project-icon {
+    width: 44px; height: 44px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; font-size: 22px;
+  }
+  .project-header h3 { font-size: 16px; font-weight: 700; }
+  .project-header p { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .project-body { padding: 0 24px 24px; }
+  .project-opea .project-header { background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(6,182,212,0.08)); border-bottom: 1px solid var(--border); }
+  .project-edenred .project-header { background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(239,68,68,0.08)); border-bottom: 1px solid var(--border); }
+
+  /* PLAYBOOK CARDS */
+  .playbook-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px; margin-bottom: 12px;
+    display: flex; gap: 16px; align-items: flex-start;
+  }
+  .playbook-num {
+    width: 32px; height: 32px; border-radius: 8px; background: var(--surface2);
+    border: 1px solid var(--border); display: flex; align-items: center;
+    justify-content: center; font-size: 12px; font-weight: 700; color: var(--accent);
+    flex-shrink: 0;
+  }
+  .playbook-title { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+  .playbook-file { font-family: monospace; font-size: 11px; color: var(--text3); margin-bottom: 6px; }
+  .playbook-desc { color: var(--text2); font-size: 12px; line-height: 1.5; }
+
+  /* GOVERNANCE CYCLE */
+  .gov-cycle {
+    display: flex; align-items: center; gap: 0; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px;
+  }
+  .gov-step {
+    flex: 1; min-width: 130px; text-align: center; padding: 12px 8px;
+  }
+  .gov-step-icon {
+    width: 44px; height: 44px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; margin: 0 auto 8px;
+  }
+  .gov-step-title { font-size: 12px; font-weight: 700; margin-bottom: 4px; }
+  .gov-step-desc { font-size: 11px; color: var(--text2); line-height: 1.4; }
+  .gov-arrow { color: var(--text3); font-size: 20px; flex-shrink: 0; }
+
+  /* EXECUTION MODES */
+  .mode-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px; border-left: 4px solid;
+  }
+  .mode-speed { border-left-color: var(--green); }
+  .mode-balanced { border-left-color: var(--accent); }
+  .mode-enterprise { border-left-color: var(--amber); }
+  .mode-emergency { border-left-color: var(--red); }
+  .mode-title { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+  .mode-max { font-size: 11px; font-weight: 700; margin-bottom: 8px; }
+  .mode-speed .mode-max { color: var(--green); }
+  .mode-balanced .mode-max { color: var(--accent); }
+  .mode-enterprise .mode-max { color: var(--amber); }
+  .mode-emergency .mode-max { color: var(--red); }
+  .mode-desc { color: var(--text2); font-size: 12px; line-height: 1.5; margin-bottom: 8px; }
+  .mode-agents { font-size: 11px; color: var(--text3); font-style: italic; }
+
+  /* FILTER BUTTONS */
+  .filter-bar { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .filter-btn {
+    padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    cursor: pointer; border: 1px solid var(--border); background: var(--surface);
+    color: var(--text2); transition: all 0.2s; user-select: none;
+  }
+  .filter-btn:hover { border-color: var(--accent); color: var(--text); }
+  .filter-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+
+  /* ALERT BOX */
+  .alert {
+    border-radius: 10px; padding: 16px; margin-bottom: 20px;
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .alert-amber { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); }
+  .alert-green { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); }
+  .alert-red { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); }
+  .alert-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .alert-title { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+  .alert-desc { font-size: 12px; color: var(--text2); line-height: 1.5; }
+
+  /* FOOTER NOTE */
+  .footer-note {
+    margin-top: 40px; padding: 16px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 10px;
+    font-size: 11px; color: var(--text3); text-align: center;
+  }
+
+  code { font-family: 'Courier New', monospace; background: var(--surface2); padding: 1px 5px; border-radius: 3px; font-size: 11px; color: var(--cyan); }
+
+  /* CEREMONIES */
+  .ceremony-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .ceremony-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .ceremony-header { padding: 14px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); }
+  .ceremony-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+  .ceremony-name { font-size: 13px; font-weight: 700; color: var(--text); }
+  .ceremony-meta { font-size: 11px; color: var(--text2); margin-top: 2px; }
+  .ceremony-body { padding: 14px 16px; }
+  .ceremony-last-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text3); margin-bottom: 6px; }
+  .ceremony-last-text { font-size: 12px; color: var(--text2); line-height: 1.6; }
+
+  @media (max-width: 900px) {
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    .stats-row { flex-wrap: wrap; }
+    .header { flex-direction: column; gap: 12px; align-items: flex-start; }
+    .main { padding: 20px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <h1>Squad de IA — <span>Financial Product Copilot</span></h1>
+    <p>BRQ Digital Solutions · PM Sênior VI / Especialista em Produtos Financeiros · Versão v1.9.14 · Atualizado em 2026-05-23</p>
+  </div>
+  <div class="header-badges">
+    <div class="badge badge-blue"><span class="badge-dot"></span>27 Agentes Ativos</div>
+    <div class="badge badge-green"><span class="badge-dot"></span>4 Skills</div>
+    <div class="badge badge-amber"><span class="badge-dot"></span>6 Playbooks</div>
+    <div class="badge badge-purple"><span class="badge-dot"></span>v1.9.14</div>
+  </div>
+</div>
+
+<div class="nav">
+  <div class="nav-item active" onclick="showTab('overview')">Visão Geral</div>
+  <div class="nav-item" onclick="showTab('arquitetura')">Arquitetura</div>
+  <div class="nav-item" onclick="showTab('agentes')">Agentes (27)</div>
+  <div class="nav-item" onclick="showTab('projetos')">Projetos</div>
+  <div class="nav-item" onclick="showTab('fluxos')">Fluxos & Modos</div>
+  <div class="nav-item" onclick="showTab('playbooks')">Playbooks & Knowledge</div>
+  <div class="nav-item" onclick="showTab('governanca')">Governança</div>
+  <div class="nav-item" onclick="showTab('evolucao')">Evolução</div>
+</div>
+
+<div class="main">
+
+<!-- ============================= VISÃO GERAL ============================= -->
+<section id="overview" class="section active">
+  <div class="section-title"><div class="icon" style="background:rgba(99,102,241,0.15)">🤖</div>Visão Geral do Squad</div>
+  <div class="section-subtitle">Conjunto de agentes de IA especializados em produtos financeiros, trabalhando de forma coordenada para acelerar decisões executivas e entrega de produto.</div>
+
+  <div class="stats-row">
+    <div class="stat-card"><div class="num num-blue">27</div><div class="label">Agentes Especializados</div></div>
+    <div class="stat-card"><div class="num num-green">4</div><div class="label">Skills de Produto</div></div>
+    <div class="stat-card"><div class="num num-amber">6</div><div class="label">Playbooks de Execução</div></div>
+    <div class="stat-card"><div class="num num-purple">7</div><div class="label">Camadas Arquiteturais</div></div>
+    <div class="stat-card"><div class="num num-cyan">2</div><div class="label">Produtos Principais</div></div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:24px">
+    <div class="card">
+      <div class="card-title">🎯 O que o Squad faz</div>
+      <div class="card-body">
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:8px">
+          <li>✅ Estrutura decisões executivas e artefatos de produto</li>
+          <li>✅ Cria requisitos, épicos, features e critérios de aceite com precisão regulatória</li>
+          <li>✅ Modela economics — MDR, P&L, unit economics, pricing</li>
+          <li>✅ Constrói apresentações C-Level</li>
+          <li>✅ Corrige e evolui artefatos técnicos (Sprint Board HTML)</li>
+          <li>✅ Monitora regulação BACEN e novidades do mercado</li>
+          <li>✅ Mantém memória estratégica entre sessões</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">🚫 O que o Squad NÃO é</div>
+      <div class="card-body">
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:8px">
+          <li>❌ Não é chatbot genérico — cada agente tem escopo específico</li>
+          <li>❌ Não é autônomo sem supervisão — sugestões aguardam aprovação humana</li>
+          <li>❌ Não substitui decisão executiva — estrutura, modela, analisa; a decisão é sempre do PM</li>
+          <li>❌ Não cria novas features sem aprovação (freeze: mai-jun/2026)</li>
+          <li>❌ Não assume premissas sem declarar</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert alert-amber">
+    <div class="alert-icon">⚠️</div>
+    <div>
+      <div class="alert-title">Congelamento de Novas Features — 2026-05-20 a 2026-06-03</div>
+      <div class="alert-desc">Nenhum novo agente, playbook ou skill deve ser criado neste período. O foco é validar o uso real do squad já construído. Exceções: ALERTA_CRITICO do research-agent ou bug crítico em artefato em uso.</div>
+    </div>
+  </div>
+
+  <div class="alert alert-green">
+    <div class="alert-icon">🔔</div>
+    <div>
+      <div class="alert-title">Protocolo de Entrada para Demandas de Produto</div>
+      <div class="alert-desc">Toda demanda de produto financeiro deve entrar via skill especializada: <code>/opea_produto</code> para Opea · <code>/edenred_produto</code> para Edenred · <code>/opea_jira</code> ou <code>/edenred_jira</code> para Sprint Board HTML.</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="section-title" style="font-size:15px;margin-bottom:16px">👤 Contexto de Uso</div>
+  <div class="card">
+    <div class="card-body">
+      <p><strong style="color:var(--text)">Usuário principal:</strong> PM Sênior VI / Especialista em Produtos Financeiros — BRQ Digital Solutions</p>
+      <br>
+      <p><strong style="color:var(--text)">Dois clientes principais:</strong></p>
+      <br>
+      <div class="grid-2" style="margin-top:8px">
+        <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:8px;padding:14px">
+          <p style="font-weight:700;color:#34d399;margin-bottom:8px">🏦 Opea</p>
+          <p>Originação, formalização, bancarização e Asset Ledger para instrumentos financeiros regulados pelo BACEN: CCB Imobiliário, CPR, CPRF, NC, CCV e PCV.</p>
+        </div>
+        <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:14px">
+          <p style="font-weight:700;color:#fbbf24;margin-bottom:8px">⛽ Edenred</p>
+          <p>Meios de pagamento, arranjo fechado (closed-loop), abastecimento, economics de MDR, interchange, adquirência, P&L e parcerias financeiras.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="section-title" style="font-size:15px;margin-bottom:16px">📅 Cerimônias do Squad</div>
+  <div class="ceremony-grid">
+    <div class="ceremony-card">
+      <div class="ceremony-header">
+        <div class="ceremony-icon" style="background:rgba(59,130,246,0.15)">⚡</div>
+        <div>
+          <div class="ceremony-name">Daily</div>
+          <div class="ceremony-meta">Seg – Sex &nbsp;·&nbsp; 09:30</div>
+        </div>
+        <span class="tag tag-blue" style="margin-left:auto;flex-shrink:0">Diária</span>
+      </div>
+      <div class="ceremony-body">
+        <div class="ceremony-last-label">Última sessão — 2026-05-21</div>
+        <div class="ceremony-last-text">Alinhamento do Sprint Board Opea v1.9.11 · Documentação consolidada em <code>Github/</code> · Congelamento de features em andamento conforme planejado · Sem bloqueios ativos.</div>
+      </div>
+    </div>
+    <div class="ceremony-card">
+      <div class="ceremony-header">
+        <div class="ceremony-icon" style="background:rgba(16,185,129,0.15)">🗓️</div>
+        <div>
+          <div class="ceremony-name">Planning</div>
+          <div class="ceremony-meta">Segunda-feira &nbsp;·&nbsp; Início de sprint</div>
+        </div>
+        <span class="tag tag-green" style="margin-left:auto;flex-shrink:0">Quinzenal</span>
+      </div>
+      <div class="ceremony-body">
+        <div class="ceremony-last-label">Última sessão — 2026-05-18</div>
+        <div class="ceremony-last-text">Sprint iniciada com foco em validação de uso real do squad (meta: 10 sessões de produto) · Prioridade: ativar <code>/opea_produto</code> e <code>/edenred_produto</code> · Congelamento de novas features confirmado até 2026-06-03.</div>
+      </div>
+    </div>
+    <div class="ceremony-card">
+      <div class="ceremony-header">
+        <div class="ceremony-icon" style="background:rgba(245,158,11,0.15)">🎯</div>
+        <div>
+          <div class="ceremony-name">Review / Demo</div>
+          <div class="ceremony-meta">Sexta-feira &nbsp;·&nbsp; Fim de sprint</div>
+        </div>
+        <span class="tag tag-amber" style="margin-left:auto;flex-shrink:0">Quinzenal</span>
+      </div>
+      <div class="ceremony-body">
+        <div class="ceremony-last-label">Última sessão — 2026-05-16</div>
+        <div class="ceremony-last-text">Demo do squad v1.9.10 · Skills <code>/opea_produto</code> e <code>/edenred_produto</code> apresentadas · Calculadora Edenred v1.0.0 demonstrada · Versionamento semântico validado pelos stakeholders.</div>
+      </div>
+    </div>
+    <div class="ceremony-card">
+      <div class="ceremony-header">
+        <div class="ceremony-icon" style="background:rgba(139,92,246,0.15)">🔁</div>
+        <div>
+          <div class="ceremony-name">Retrospectiva</div>
+          <div class="ceremony-meta">Sexta-feira &nbsp;·&nbsp; Fim de sprint</div>
+        </div>
+        <span class="tag tag-purple" style="margin-left:auto;flex-shrink:0">Quinzenal</span>
+      </div>
+      <div class="ceremony-body">
+        <div class="ceremony-last-label">Última sessão — 2026-05-16</div>
+        <div class="ceremony-last-text"><strong style="color:var(--green)">Keep:</strong> Protocolo PE→Orchestrator funcionando bem · <strong style="color:var(--amber)">Improve:</strong> Taxa de ativação dos agentes especializados ainda baixa · <strong style="color:var(--accent)">Action:</strong> Criar ponto de entrada obrigatório via skills de produto.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================= ARQUITETURA ============================= -->
+<section id="arquitetura" class="section">
+  <div class="section-title"><div class="icon" style="background:rgba(245,158,11,0.15)">🏗️</div>Arquitetura — 7 Camadas</div>
+  <div class="section-subtitle">O squad é organizado em camadas funcionais. O fluxo padrão percorre de cima para baixo, com a camada de memória sustentando todas as demais.</div>
+
+  <div class="grid-2" style="gap:24px">
+    <div>
+      <div class="arch-diagram">
+        <div class="arch-layer arch-layer-intel">
+          <div>
+            <div class="arch-layer-title" style="color:#a78bfa">1. Camada de Inteligência</div>
+            <div class="arch-layer-agents">Estrutura e planeja todas as execuções</div>
+          </div>
+          <div style="text-align:right">
+            <span class="tag tag-purple">prompt-engineer</span>
+            <span class="tag tag-purple">orchestrator</span>
+          </div>
+        </div>
+        <div class="arch-arrow">↓</div>
+        <div class="arch-layer arch-layer-produto">
+          <div>
+            <div class="arch-layer-title" style="color:#34d399">2. Produto & Estratégia</div>
+            <div class="arch-layer-agents">Artefatos, narrativas e pesquisa de usuário</div>
+          </div>
+          <div style="text-align:right">
+            <span class="tag tag-green">product-manager</span>
+            <span class="tag tag-green">executive-storyteller</span>
+            <span class="tag tag-green">ux-researcher</span>
+          </div>
+        </div>
+        <div class="arch-arrow">↓</div>
+        <div class="arch-layer arch-layer-arq">
+          <div>
+            <div class="arch-layer-title" style="color:#fbbf24">3. Arquitetura Financeira</div>
+            <div class="arch-layer-agents">Regulação, compliance, arquitetura técnica</div>
+          </div>
+          <div style="text-align:right">
+            <span class="tag tag-amber">financial-systems-architect</span>
+            <span class="tag tag-amber">solution-architect</span>
+            <span class="tag tag-amber">business-analyst-financeiro</span>
+            <span class="tag tag-amber">technical-lead</span>
+          </div>
+        </div>
+        <div class="arch-arrow">↓</div>
+        <div class="arch-layer arch-layer-econ">
+          <div>
+            <div class="arch-layer-title" style="color:#60a5fa">4. Economics & Dados</div>
+            <div class="arch-layer-agents">MDR, P&L, KPIs, dashboards, unit economics</div>
+          </div>
+          <div style="text-align:right">
+            <span class="tag tag-blue">payments-economics-analyst</span>
+            <span class="tag tag-blue">data-product-strategist</span>
+          </div>
+        </div>
+        <div class="arch-arrow">↓</div>
+        <div class="arch-layer arch-layer-exec">
+          <div>
+            <div class="arch-layer-title" style="color:#94a3b8">5. Execução</div>
+            <div class="arch-layer-agents">Código, infraestrutura, segurança, dados</div>
+          </div>
+          <div style="text-align:right">
+            <span class="tag tag-gray">frontend</span>
+            <span class="tag tag-gray">backend</span>
+            <span class="tag tag-gray">fullstack</span>
+            <span class="tag tag-gray">devops</span>
+            <span class="tag tag-gray">security</span>
+          </div>
+        </div>
+        <div class="arch-arrow">↓</div>
+        <div class="arch-layer arch-layer-qa">
+          <div>
+            <div class="arch-layer-title" style="color:#f87171">6. QA & Qualidade</div>
+            <div class="arch-layer-agents">Validação técnica e executiva antes da entrega</div>
+          </div>
+          <div style="text-align:right">
+            <span class="tag tag-red">qa-test-engineer</span>
+            <span class="tag tag-red">executive-reviewer</span>
+          </div>
+        </div>
+        <div class="arch-arrow">↑ sustenta todas as camadas</div>
+        <div class="arch-layer arch-layer-mem">
+          <div>
+            <div class="arch-layer-title" style="color:#22d3ee">7. Memória & Operação</div>
+            <div class="arch-layer-agents">Estado, métricas, inteligência e aprendizado contínuo</div>
+          </div>
+          <div style="text-align:right">
+            <span class="tag tag-cyan">context-manager</span>
+            <span class="tag tag-cyan">strategic-memory-manager</span>
+            <span class="tag tag-cyan">task-memory-manager</span>
+            <span class="tag tag-cyan">ai-operations-analyst</span>
+            <span class="tag tag-cyan">ai-metrics-analyst</span>
+            <span class="tag tag-cyan">research-agent</span>
+            <span class="tag tag-cyan">execution-engine</span>
+            <span class="tag tag-cyan">capability-registry</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title" style="margin-bottom:14px">⚙️ Modos de Execução</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div class="mode-card mode-speed">
+            <div class="mode-title">Speed</div>
+            <div class="mode-max">Máx. 2 agentes</div>
+            <div class="mode-desc">Bug simples, ajuste de texto, correção pontual, micro-tarefa</div>
+            <div class="mode-agents">executor + qa-test-engineer</div>
+          </div>
+          <div class="mode-card mode-balanced">
+            <div class="mode-title">Balanced</div>
+            <div class="mode-max">Máx. 4 agentes</div>
+            <div class="mode-desc">Feature nova simples, apresentação, economics, sem impacto regulatório</div>
+            <div class="mode-agents">technical-lead + executor + qa ± especialista</div>
+          </div>
+          <div class="mode-card mode-enterprise">
+            <div class="mode-title">Enterprise</div>
+            <div class="mode-max">Máx. 6 agentes</div>
+            <div class="mode-desc">Feature regulada, novo produto, integração sistêmica, impacto múltiplos fluxos</div>
+            <div class="mode-agents">BAF + FSA + SA + technical-lead + executor + QA</div>
+          </div>
+          <div class="mode-card mode-emergency">
+            <div class="mode-title">Emergency</div>
+            <div class="mode-max">Máx. 3 agentes</div>
+            <div class="mode-desc">P0 em produção, dado incorreto, rollback necessário</div>
+            <div class="mode-agents">debugger + error-detective + executor + QA</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="margin-bottom:12px">⚡ Fast Lane — Sprint Board</div>
+        <div class="card-body">
+          <p style="margin-bottom:10px">Elimina overhead PE+Orchestrator quando <strong style="color:var(--text)">todos</strong> os critérios são verdadeiros:</p>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:6px">
+            <li>• Arquivo único</li>
+            <li>• Mudança pontual e bem delimitada</li>
+            <li>• Risco baixo (sem impacto em outros fluxos)</li>
+            <li>• Agente único óbvio</li>
+          </ul>
+          <div style="margin-top:12px;padding:10px;background:var(--surface2);border-radius:6px;border:1px solid var(--border)">
+            <p style="font-size:11px;font-weight:700;color:var(--text3);margin-bottom:6px">EXCLUI fast lane:</p>
+            <ul style="list-style:none;display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--text2)">
+              <li>❌ Mudança que afeta localStorage</li>
+              <li>❌ Impacta mais de 2 funções interdependentes</li>
+              <li>❌ Nova feature com estado próprio</li>
+              <li>❌ Qualquer mudança em modo executivo/apresentação</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="section-title" style="font-size:15px;margin-bottom:16px">🔗 Sub-agentes de Domínio</div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Sub-agente</th><th>Agente Pai</th><th>Modelo</th><th>Domínio Específico</th></tr></thead>
+      <tbody>
+        <tr><td><code>ccb-structuring-engine</code></td><td>financial-systems-architect</td><td><span class="tag tag-amber">Opus</span></td><td>Estruturação CCB: cláusulas obrigatórias, ICP-Brasil, imutabilidade, registro em registradora</td></tr>
+        <tr><td><code>ledger-specialist</code></td><td>financial-systems-architect</td><td><span class="tag tag-amber">Opus</span></td><td>Asset Ledger, escrituração, gravames, alienação fiduciária, cessão, FIDC/CRI/CRA, CERC/Núclea</td></tr>
+        <tr><td><code>spi-spb-architect</code></td><td>financial-systems-architect</td><td><span class="tag tag-amber">Opus</span></td><td>PIX/SPI: integração ICOM, MED 2.0, DICT, bloqueio cautelar 72h, arquitetura PSP</td></tr>
+        <tr><td><code>mdr-pricing-analyst</code></td><td>payments-economics-analyst</td><td><span class="tag tag-blue">Sonnet</span></td><td>MDR decomposição, interchange por bandeira, caps PAT (3,6%/2%), benchmarks competitivos</td></tr>
+        <tr><td><code>pnl-modeler</code></td><td>payments-economics-analyst</td><td><span class="tag tag-blue">Sonnet</span></td><td>P&L multi-cenário, unit economics, breakeven, LTV/CAC, análise de sensibilidade</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="font-size:12px;color:var(--text2)"><strong>Regra:</strong> Usar o pai <em>ou</em> o sub-agente — nunca em paralelo. O orchestrator pode rotear direto ao sub-agente quando a demanda é exclusivamente do domínio dele.</p>
+</section>
+
+<!-- ============================= AGENTES ============================= -->
+<section id="agentes" class="section">
+  <div class="section-title"><div class="icon" style="background:rgba(59,130,246,0.15)">🤖</div>Catálogo de Agentes — 27 Ativos</div>
+  <div class="section-subtitle">Todos os agentes customizados estão em <code>.claude/agents/</code> e ativos desde v1.9.0.</div>
+
+  <div class="filter-bar">
+    <div class="filter-btn active" onclick="filterAgents('all', this)">Todos (27)</div>
+    <div class="filter-btn" onclick="filterAgents('intel', this)">Inteligência (2)</div>
+    <div class="filter-btn" onclick="filterAgents('produto', this)">Produto (3)</div>
+    <div class="filter-btn" onclick="filterAgents('memoria', this)">Memória & Op. (8)</div>
+    <div class="filter-btn" onclick="filterAgents('arq', this)">Arq. Financeira (4)</div>
+    <div class="filter-btn" onclick="filterAgents('econ', this)">Economics (2)</div>
+    <div class="filter-btn" onclick="filterAgents('qa', this)">QA (2)</div>
+    <div class="filter-btn" onclick="filterAgents('sub', this)">Sub-agentes (5)</div>
+    <div class="filter-btn" onclick="filterAgents('exec', this)">Execução (1)</div>
+  </div>
+
+  <div class="agents-grid" id="agentsGrid">
+    <!-- INTELIGÊNCIA -->
+    <div class="agent-card" data-layer="intel">
+      <div class="agent-header"><span class="agent-name">prompt-engineer</span><span class="agent-model model-sonnet">Sonnet</span></div>
+      <div class="agent-desc">Primeiro agente de toda execução. Recebe demandas brutas do usuário, diagnostica a necessidade real, estrutura contexto, define escopo e critérios de aceite. Entrega prompt refinado e executável para o orchestrator.</div>
+      <span class="agent-layer layer-intel">Inteligência</span>
+    </div>
+    <div class="agent-card" data-layer="intel">
+      <div class="agent-header"><span class="agent-name">orchestrator</span><span class="agent-model model-sonnet">Sonnet</span></div>
+      <div class="agent-desc">Recebe prompt refinado do PE, seleciona agentes do catálogo, define sequência (paralela ou sequencial), define execution_mode e cria o plano de execução. Nunca edita arquivos diretamente.</div>
+      <span class="agent-layer layer-intel">Inteligência</span>
+    </div>
+    <!-- PRODUTO -->
+    <div class="agent-card" data-layer="produto">
+      <div class="agent-header"><span class="agent-name">product-manager</span><span class="agent-model model-sonnet">Sonnet</span></div>
+      <div class="agent-desc">PRDs, épicos, features, histórias de usuário, critérios de aceite (BDD/Gherkin), OKRs, roadmaps, backlog. Especializado em produtos financeiros: CCB, CPR, bancarização, payments, MDR.</div>
+      <span class="agent-layer layer-produto">Produto</span>
+    </div>
+    <div class="agent-card" data-layer="produto">
+      <div class="agent-header"><span class="agent-name">executive-storyteller</span><span class="agent-model model-opus">Opus</span></div>
+      <div class="agent-desc">Apresentações C-Level, board decks, executive summaries, investor pitches, narrativas estratégicas. Produz estrutura de slides, mensagens-chave, fluxo narrativo. Contexto fintech/banking. Não escreve código.</div>
+      <span class="agent-layer layer-produto">Produto</span>
+    </div>
+    <div class="agent-card" data-layer="produto">
+      <div class="agent-header"><span class="agent-name">ux-researcher</span><span class="agent-model model-sonnet">Sonnet</span></div>
+      <div class="agent-desc">Pesquisa qualitativa com usuários: entrevistas, mapeamento de jornada, friction points, personas financeiras, synthesis de discovery. Especializado em Opea (CCB, Asset Ledger) e Edenred (abastecimento, transações).</div>
+      <span class="agent-layer layer-produto">Produto</span>
+    </div>
+    <!-- MEMÓRIA & OPERAÇÃO -->
+    <div class="agent-card" data-layer="memoria">
+      <div class="agent-header"><span class="agent-name">context-manager</span><span class="agent-model model-sonnet">Sonnet</span></div>
+      <div class="agent-desc">Estado operacional VIVO da sessão atual: snapshots, handoffs entre agentes, compressão de contexto. Gerencia o PRESENTE — o que está acontecendo agora nesta sessão.</div>
+      <span class="agent-layer layer-memoria">Memória & Op.</span>
+    </div>
+    <div class="agent-card" data-layer="memoria">
+      <div class="agent-header"><span class="agent-name">strategic-memory-manager</span><span class="agent-model model-sonnet">Sonnet</span></div>
+      <div class="agent-desc">Memória histórica permanente: decisões estratégicas, glossário de produtos, padrões aprovados. Gerencia o PASSADO — o que foi decidido e registrado em sessões anteriores. Persiste em <code>memory/squad/decisions/</code>.</div>
+      <span class="agent-layer layer-memoria">Memória & Op.</span>
+    </div>
+    <div class="agent-card" data-layer="memoria">
+      <div class="agent-header"><span class="agent-name">task-memory-manager</span><span class="agent-model model-sonnet">Sonnet</span></div>
+      <div class="agent-desc">Memória operacional por tarefa: agentes envolvidos, decisões, erros encontrados, resolução adotada, aprendizados. Acionar ao fim de toda entrega significativa. Armazena em <code>memory/squad/tasks/</code>.</div>
+      <span class="agent-layer layer-memoria">Memória & Op.</span>
+    </div>
+    <div class="agent-card" data-layer="memoria">
+      <div class="agent-header"><span class="agent-name">execution-engine</span><span class="agent-model model-sonnet">Sonnet</span></div>
+      <div class="agent-desc">Gerencia execução de planos do orchestrator: dependency graph, checkpoints, retry com contexto de falha, rollback controlado, execution log. O orchestrator planeja; o execution-engine executa e monitora.</div>
+      <span class="agent-layer layer-memoria">Memória & Op.</span>
+    </div>
+    <div class="agent-card" data-layer="memoria">
+      <div class="agent-header"><span class="agent-name">capability-registry</span><span class="agent-model model-sonnet">Sonnet</span></div>
+      <div class="agent-desc">Matriz completa de capacidades do squad: o que cada agente faz e não faz, inputs/outputs, dependências, riscos. Consultar quando boundary for ambíguo ou quando construindo novo padrão de orquestração.</div>
+      <span class="agent-layer layer-memoria">Memória & Op.</span>
+    </div>
+    <div class="agent-card" data-layer="memoria">
+      <div class="agent-header"><span class="agent-name">ai-operations-analyst</span><span class="agent-model model-sonnet">Sonnet</span></div>
+      <div class="agent-desc">Análise qualitativa de processo: performance geral do squad, gargalos de orquestração, taxa de retrabalho, melhorias operacionais. Foco em COMO o squad trabalha. Complementa o ai-metrics-analyst.</div>
+      <span class="agent-layer layer-memoria">Memória & Op.</span>
+    </div>
+    <div class="agent-card" data-layer="memoria">
+      <div class="agent-header"><span class="agent-name">ai-metrics-analyst</span><span class="agent-model model-sonnet">Sonnet</span></div>
+      <div class="agent-desc">Análise quantitativa: taxa de erro/retrabalho/uso por agente, alertas de saúde (subutilizado, redundante, caro), custo Opus vs Sonnet. Foco em NÚMEROS. Complementa o ai-operations-analyst.</div>
+      <span class="agent-layer layer-memoria">Memória & Op.</span>
+    </div>
+    <div class="agent-card" data-layer="memoria">
+      <div class="agent-header"><span class="agent-name">research-agent</span><span class="agent-model model-sonnet">Sonnet</span></div>
+      <div class="agent-desc">Inteligência externa: BACEN, PIX, fintech, Claude/Anthropic, Stack Técnica. Busca novas fontes dinamicamente a cada execução. Cria sugestões em <code>suggestions/</code> — nunca aplica mudanças diretamente. Roda seg-sex 9:30h.</div>
+      <span class="agent-layer layer-memoria">Memória & Op.</span>
+    </div>
+    <!-- ARQUITETURA FINANCEIRA -->
+    <div class="agent-card" data-layer="arq">
+      <div class="agent-header"><span class="agent-name">financial-systems-architect</span><span class="agent-model model-opus">Opus</span></div>
+      <div class="agent-desc">O QUÊ: regulação BACEN, conformidade, fluxo financeiro correto, CCB, PIX, arranjos, CERC, Núclea. Define requisitos regulatórios. Deve ser acionado ANTES do solution-architect em qualquer feature de produto financeiro regulado.</div>
+      <span class="agent-layer layer-arq">Arq. Financeira</span>
+    </div>
+    <div class="agent-card" data-layer="arq">
+      <div class="agent-header"><span class="agent-name">solution-architect</span><span class="agent-model model-opus">Opus</span></div>
+      <div class="agent-desc">COMO: arquitetura técnica ponta-a-ponta, APIs, event-driven, integrações SPB. Define COMO atender requisitos do FSA. Read-only — nunca escreve código. Acionar APÓS o FSA, ANTES do technical-lead.</div>
+      <span class="agent-layer layer-arq">Arq. Financeira</span>
+    </div>
+    <div class="agent-card" data-layer="arq">
+      <div class="agent-header"><span class="agent-name">business-analyst-financeiro</span><span class="agent-model model-sonnet">Sonnet</span></div>
+      <div class="agent-desc">Discovery, AS-IS/TO-BE, BPMN, regras de negócio, gaps funcionais, critérios de aceite, fluxos operacionais, requisitos regulatórios. Refinamento pré-product-manager para produtos financeiros (CCB, PIX, arranjos, adquirência).</div>
+      <span class="agent-layer layer-arq">Arq. Financeira</span>
+    </div>
+    <div class="agent-card" data-layer="arq">
+      <div class="agent-header"><span class="agent-name">technical-lead</span><span class="agent-model model-sonnet">Sonnet</span></div>
+      <div class="agent-desc">Trade-offs técnicos, escolha de abordagem de implementação mais simples e segura, define padrões técnicos, orienta executores. Previne overengineering. Acionar antes dos agentes executores em tarefas complexas.</div>
+      <span class="agent-layer layer-arq">Arq. Financeira</span>
+    </div>
+    <!-- ECONOMICS & DADOS -->
+    <div class="agent-card" data-layer="econ">
+      <div class="agent-header"><span class="agent-name">payments-economics-analyst</span><span class="agent-model model-sonnet">Sonnet</span></div>
+      <div class="agent-desc">MDR, interchange, P&L, unit economics, take rate, revenue share, pricing, viabilidade econômica. Obrigatório em Economics/P&L na skill /opea_produto e /edenred_produto. Sub-agentes: mdr-pricing-analyst e pnl-modeler.</div>
+      <span class="agent-layer layer-econ">Economics</span>
+    </div>
+    <div class="agent-card" data-layer="econ">
+      <div class="agent-header"><span class="agent-name">data-product-strategist</span><span class="agent-model model-sonnet">Sonnet</span></div>
+      <div class="agent-desc">KPIs de produto, analytics strategy, dashboards executivos (Power BI, HTML), cohort analysis, funil, modelagem de dados para produtos financeiros. Transforma métricas brutas em inteligência para tomada de decisão.</div>
+      <span class="agent-layer layer-econ">Economics</span>
+    </div>
+    <!-- QA -->
+    <div class="agent-card" data-layer="qa">
+      <div class="agent-header"><span class="agent-name">qa-test-engineer</span><span class="agent-model model-sonnet">Sonnet</span></div>
+      <div class="agent-desc">Validação técnica pré-entrega: código, fluxos, dados, regressão, estabilidade funcional, produção. Especializado em sistemas financeiros, Sprint Boards e dashboards. Obrigatório em toda entrega com código.</div>
+      <span class="agent-layer layer-qa">QA</span>
+    </div>
+    <div class="agent-card" data-layer="qa">
+      <div class="agent-header"><span class="agent-name">executive-reviewer</span><span class="agent-model model-opus">Opus</span></div>
+      <div class="agent-desc">Validação executiva: narrativa, clareza, hierarquia de mensagem, consistência numérica, prontidão C-Level. Bloqueia entrega se o artefato não está pronto para audiência executiva. Obrigatório antes de entrega para cliente.</div>
+      <span class="agent-layer layer-qa">QA</span>
+    </div>
+    <!-- SUB-AGENTES -->
+    <div class="agent-card" data-layer="sub">
+      <div class="agent-header"><span class="agent-name">ccb-structuring-engine</span><span class="agent-model model-opus">Opus</span></div>
+      <div class="agent-desc">Sub-agente do FSA. Estruturação CCB: cláusulas obrigatórias (Lei 10.931/2004), ICP-Brasil, imutabilidade, registro em registradora (CERC/CIP/Núclea), CCB Imobiliário, CPR, NC, alienação fiduciária.</div>
+      <span class="agent-layer layer-sub">Sub-agente FSA</span>
+    </div>
+    <div class="agent-card" data-layer="sub">
+      <div class="agent-header"><span class="agent-name">ledger-specialist</span><span class="agent-model model-opus">Opus</span></div>
+      <div class="agent-desc">Sub-agente do FSA. Asset Ledger, escrituração, gravames, alienação fiduciária, cessão de crédito, securitização (FIDC/CRI/CRA), integrações registradoras (CERC, Núclea, CIP). Registro e lifecycle de ativos financeiros.</div>
+      <span class="agent-layer layer-sub">Sub-agente FSA</span>
+    </div>
+    <div class="agent-card" data-layer="sub">
+      <div class="agent-header"><span class="agent-name">spi-spb-architect</span><span class="agent-model model-opus">Opus</span></div>
+      <div class="agent-desc">Sub-agente do FSA. PIX/SPI: integração ICOM, DICT, QR Code, liquidação instantânea. PIX MED 2.0 (5 níveis de rastreamento de fraude), botão de contestação obrigatório, bloqueio cautelar 72h. SPB: STR, SILOC, SITRAF.</div>
+      <span class="agent-layer layer-sub">Sub-agente FSA</span>
+    </div>
+    <div class="agent-card" data-layer="sub">
+      <div class="agent-header"><span class="agent-name">mdr-pricing-analyst</span><span class="agent-model model-sonnet">Sonnet</span></div>
+      <div class="agent-desc">Sub-agente do PEA. MDR decomposição, interchange por bandeira (Visa/MC/Elo), caps PAT (MDR 3,6% / intercâmbio 2%), pricing por MCC/volume, benchmarks competitivos (Stone/Getnet/Rede/Cielo), revenue share.</div>
+      <span class="agent-layer layer-sub">Sub-agente PEA</span>
+    </div>
+    <div class="agent-card" data-layer="sub">
+      <div class="agent-header"><span class="agent-name">pnl-modeler</span><span class="agent-model model-sonnet">Sonnet</span></div>
+      <div class="agent-desc">Sub-agente do PEA. P&L multi-cenário (conservador/base/agressivo), unit economics, breakeven, LTV/CAC, análise de sensibilidade, projeção com cohort logic, custo de originação CCB, economics de arranjo fechado.</div>
+      <span class="agent-layer layer-sub">Sub-agente PEA</span>
+    </div>
+    <!-- EXECUÇÃO -->
+    <div class="agent-card" data-layer="exec">
+      <div class="agent-header"><span class="agent-name">frontend-developer</span><span class="agent-model model-sonnet">Sonnet</span></div>
+      <div class="agent-desc">Agente especializado no Sprint Board HTML Opea e Edenred. Lê obrigatoriamente o context file antes de qualquer mudança. Restrições absolutas: <code>window.*</code> para globals, <code>srcdoc</code> para iframes, <code>data</code> global como fonte autoritativa.</div>
+      <span class="agent-layer layer-exec">Execução</span>
+    </div>
+  </div>
+
+  <div class="footer-note" style="margin-top:24px">
+    <strong>Seleção de Modelo:</strong> Opus → análise financeira complexa, decisões regulatórias de alto risco, revisão arquitetural, executive-reviewer, FSA, SA, executive-storyteller · Sonnet → maioria das tarefas (PM, BA, QA, research, orchestrator)
+  </div>
+</section>
+
+<!-- ============================= PROJETOS ============================= -->
+<section id="projetos" class="section">
+  <div class="section-title"><div class="icon" style="background:rgba(16,185,129,0.15)">🏦</div>Projetos Principais</div>
+  <div class="section-subtitle">Os dois clientes ativos com seus respectivos produtos, artefatos versionados e skills dedicadas.</div>
+
+  <div class="project-card project-opea">
+    <div class="project-header">
+      <div class="project-icon" style="background:rgba(16,185,129,0.2)">🏦</div>
+      <div>
+        <h3 style="color:#34d399">Opea</h3>
+        <p>Originação, Formalização, Bancarização e Asset Ledger</p>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <span class="badge badge-green"><span class="badge-dot"></span>Sprint Board v1.8.0</span>
+        <span class="badge badge-green"><span class="badge-dot"></span>/opea_produto</span>
+      </div>
+    </div>
+    <div class="project-body">
+      <div class="grid-2" style="margin-top:16px;gap:16px">
+        <div>
+          <p style="font-weight:700;font-size:12px;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px">Instrumentos Financeiros</p>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <span class="tag tag-green">CCB Imobiliário</span>
+            <span class="tag tag-green">CPR</span>
+            <span class="tag tag-green">CPRF</span>
+            <span class="tag tag-green">NC</span>
+            <span class="tag tag-green">CCV</span>
+            <span class="tag tag-green">PCV</span>
+          </div>
+          <p style="font-weight:700;font-size:12px;color:var(--text2);margin:14px 0 10px;text-transform:uppercase;letter-spacing:0.5px">Contextos-Chave</p>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <span class="tag tag-cyan">Escrituração</span>
+            <span class="tag tag-cyan">Registradoras</span>
+            <span class="tag tag-cyan">Cessão de crédito</span>
+            <span class="tag tag-cyan">Asset Ledger</span>
+            <span class="tag tag-cyan">Garantias</span>
+            <span class="tag tag-cyan">Compliance BACEN</span>
+            <span class="tag tag-cyan">Securitização</span>
+            <span class="tag tag-cyan">Trilha auditável</span>
+          </div>
+        </div>
+        <div>
+          <p style="font-weight:700;font-size:12px;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px">Agentes Obrigatórios por Tipo</p>
+          <div class="table-wrap" style="margin-bottom:0">
+            <table class="data-table">
+              <thead><tr><th>Tipo de Demanda</th><th>Agentes</th></tr></thead>
+              <tbody>
+                <tr><td>Requisitos / Discovery</td><td>BAF → FSA → PM</td></tr>
+                <tr><td>Economics / P&L</td><td>PEA (obrigatório) + PM (opcional)</td></tr>
+                <tr><td>Arquitetura técnica</td><td>FSA → SA → Technical Lead</td></tr>
+                <tr><td>CCB / Asset Ledger</td><td>ccb-structuring-engine / ledger-specialist</td></tr>
+                <tr><td>Sprint Board HTML</td><td>skill /opea_jira → frontend-developer + QA</td></tr>
+                <tr><td>Apresentação C-Level</td><td>executive-storyteller → PEA → exec-reviewer</td></tr>
+                <tr><td>UX / Discovery</td><td>ux-researcher (obrigatório)</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <p style="font-weight:700;font-size:12px;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px">Versionamento do Sprint Board</p>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:10px">Estrutura: <code>Opea_Jira/opea_sprint_board/vX.Y.Z/</code> · Convenção MAJOR.MINOR.PATCH · Espelho em <code>github/</code></p>
+      <p style="font-size:12px;color:var(--text)"><strong>Versão atual: v1.8.0</strong> (2026-05-20) — Aba Entregas removida, Marcos reordenados</p>
+      <p style="font-size:11px;color:var(--amber);margin-top:8px">⚠️ Regra de ouro: versões são IMUTÁVEIS. Nunca sobrescrever pasta existente. Sempre criar nova vX.Y.Z.</p>
+    </div>
+  </div>
+
+  <div class="project-card project-edenred">
+    <div class="project-header">
+      <div class="project-icon" style="background:rgba(245,158,11,0.2)">⛽</div>
+      <div>
+        <h3 style="color:#fbbf24">Edenred</h3>
+        <p>Pagamentos, Arranjo Fechado e Economics</p>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <span class="badge badge-amber"><span class="badge-dot"></span>Sprint Board v2.0.0</span>
+        <span class="badge badge-amber"><span class="badge-dot"></span>Calculadora v1.0.0</span>
+        <span class="badge badge-amber"><span class="badge-dot"></span>/edenred_produto</span>
+      </div>
+    </div>
+    <div class="project-body">
+      <div class="grid-2" style="margin-top:16px;gap:16px">
+        <div>
+          <p style="font-weight:700;font-size:12px;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px">Temas Principais</p>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <span class="tag tag-amber">Arranjo Fechado</span>
+            <span class="tag tag-amber">MDR</span>
+            <span class="tag tag-amber">Interchange</span>
+            <span class="tag tag-amber">P&L</span>
+            <span class="tag tag-amber">Adquirência</span>
+            <span class="tag tag-amber">POS</span>
+            <span class="tag tag-amber">TPV</span>
+            <span class="tag tag-amber">Revenue Share</span>
+            <span class="tag tag-amber">Abastecimento</span>
+            <span class="tag tag-amber">Postos</span>
+          </div>
+          <div class="alert alert-red" style="margin-top:14px">
+            <div class="alert-icon">🚨</div>
+            <div>
+              <div class="alert-title">Alerta PAT 2026 — Ativo</div>
+              <div class="alert-desc">MDR máximo 3,6% (Fase 1, desde fev/2026). Intercâmbio máximo 2%. VA/VR PAT <strong>vedado para combustível</strong> (Decreto 12.712/2025). Operadoras &gt;500K trabalhadores devem abrir arranjos.</div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <p style="font-weight:700;font-size:12px;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px">Agentes Obrigatórios por Tipo</p>
+          <div class="table-wrap" style="margin-bottom:0">
+            <table class="data-table">
+              <thead><tr><th>Tipo de Demanda</th><th>Agentes</th></tr></thead>
+              <tbody>
+                <tr><td>Economics / MDR / P&L</td><td>PEA + mdr-pricing-analyst / pnl-modeler</td></tr>
+                <tr><td>Jornada / Regulação PAT</td><td>FSA + BAF</td></tr>
+                <tr><td>Pricing strategy</td><td>mdr-pricing-analyst → FSA → PM</td></tr>
+                <tr><td>Apresentação C-Level</td><td>executive-storyteller → PEA → exec-reviewer</td></tr>
+                <tr><td>Sprint Board HTML</td><td>skill /edenred_jira → frontend-developer + QA</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <p style="font-weight:700;font-size:12px;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px">Versionamento</p>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:6px">Sprint Board: <code>Edenred_Jira/edenred_sprint_board/vX.Y.Z/</code> · Calculadora: <code>calculadoras/vX.Y.Z/</code></p>
+      <p style="font-size:12px;color:var(--text)"><strong>Sprint Board: v2.0.0</strong> (2026-05-19) — MAJOR: engine transplantado do Opea v1.3.0 com dados Edenred</p>
+      <p style="font-size:12px;color:var(--text)"><strong>Calculadora: v1.0.0</strong> (2026-05-18) — Baseline da migração do versionamento ad-hoc (v8 anterior)</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================= FLUXOS ============================= -->
+<section id="fluxos" class="section">
+  <div class="section-title"><div class="icon" style="background:rgba(6,182,212,0.15)">⚡</div>Fluxos de Trabalho & Padrões de Orquestração</div>
+  <div class="section-subtitle">O pipeline padrão é sempre PE → Orchestrator → Agentes → QA. Exceções apenas com critérios objetivos.</div>
+
+  <div class="grid-2" style="gap:24px;margin-bottom:24px">
+    <div class="card">
+      <div class="card-title" style="margin-bottom:16px">Pipeline Padrão</div>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--purple)">1</div>
+          <div class="flow-content">
+            <div class="flow-title">prompt-engineer</div>
+            <div class="flow-desc">Estrutura e refina o prompt. Diagnostica a necessidade real, define escopo e critérios de aceite.</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--accent2)">2</div>
+          <div class="flow-content">
+            <div class="flow-title">orchestrator</div>
+            <div class="flow-desc">Seleciona agentes, define execution_mode, sequência e dependências. Cria plano de execução.</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--accent)">3</div>
+          <div class="flow-content">
+            <div class="flow-title">Agentes especializados</div>
+            <div class="flow-desc">Executam em paralelo ou sequência conforme o plano. Leem context files antes de iniciar.</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num" style="background:var(--red)">4</div>
+          <div class="flow-content">
+            <div class="flow-title">qa-test-engineer + executive-reviewer</div>
+            <div class="flow-desc">QA valida código; executive-reviewer valida narrativa executiva. Ambos bloqueiam se necessário.</div>
+          </div>
+        </div>
+        <div class="flow-step" style="border:none">
+          <div class="flow-num" style="background:var(--green)">✓</div>
+          <div class="flow-content">
+            <div class="flow-title">Entrega validada ao usuário</div>
+            <div class="flow-desc">Artefato entregue + task-memory-manager registra execução em entregas significativas.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="table-wrap" style="margin-bottom:16px">
+        <table class="data-table">
+          <thead><tr><th>Padrão</th><th>Modo</th><th>Fluxo</th></tr></thead>
+          <tbody>
+            <tr><td style="font-weight:600">Micro-tarefa (Fast Lane)</td><td><span class="tag tag-green">speed</span></td><td>executor → qa</td></tr>
+            <tr><td style="font-weight:600">Feature / Bug fix</td><td><span class="tag tag-blue">balanced</span></td><td>code-reviewer → executor → qa</td></tr>
+            <tr><td style="font-weight:600">Apresentação C-Level</td><td><span class="tag tag-blue">balanced</span></td><td>exec-storyteller → PEA → exec-reviewer</td></tr>
+            <tr><td style="font-weight:600">Nova Feature Financeira</td><td><span class="tag tag-amber">enterprise</span></td><td>BAF → PEA → PM → FSA → SA → TL → executor → QA</td></tr>
+            <tr><td style="font-weight:600">Produto Regulado / CCB</td><td><span class="tag tag-amber">enterprise</span></td><td>BAF → PEA → FSA → SA → compliance → PM → QA</td></tr>
+            <tr><td style="font-weight:600">Decisão de Pricing</td><td><span class="tag tag-blue">balanced</span></td><td>PEA → FSA → PM → exec-storyteller</td></tr>
+            <tr><td style="font-weight:600">Pesquisa Regulatória</td><td><span class="tag tag-green">speed</span></td><td>research-agent (protocolo completo)</td></tr>
+            <tr><td style="font-weight:600">P0 em Produção</td><td><span class="tag tag-red">emergency</span></td><td>debugger → error-detective → executor → QA</td></tr>
+            <tr><td style="font-weight:600">Melhoria Contínua Squad</td><td><span class="tag tag-blue">balanced</span></td><td>ai-ops-analyst → context-manager → SMM → orchestrator → PE</td></tr>
+            <tr><td style="font-weight:600">Cascade Regulatório</td><td><span class="tag tag-amber">enterprise</span></td><td>FSA → PM → exec-storyteller → exec-reviewer → suggestions/</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="margin-bottom:12px">🔄 Protocolo de Retry de QA</div>
+        <div class="card-body">
+          <ol style="list-style:decimal;padding-left:16px;display:flex;flex-direction:column;gap:8px">
+            <li>QA rejeita → agente executor corrige</li>
+            <li>Nova validação (máx. 2 tentativas)</li>
+            <li>Se bloqueado após 2 tentativas → replanejamento pelo orchestrator</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="section-title" style="font-size:15px;margin-bottom:16px">🔗 Boundaries Críticos</div>
+  <div class="grid-2" style="gap:16px">
+    <div class="table-wrap" style="margin-bottom:0">
+      <p style="padding:12px 14px;font-weight:700;font-size:12px;border-bottom:1px solid var(--border)">context-manager vs strategic-memory-manager</p>
+      <table class="data-table">
+        <thead><tr><th></th><th>context-manager</th><th>strategic-memory-manager</th></tr></thead>
+        <tbody>
+          <tr><td>Gerencia</td><td>Estado VIVO da sessão atual</td><td>Decisões históricas permanentes</td></tr>
+          <tr><td>Horizonte</td><td>Presente (esta sessão)</td><td>Passado (histórico acumulado)</td></tr>
+          <tr><td>Persiste em</td><td>Contexto da sessão</td><td><code>memory/squad/decisions/</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="table-wrap" style="margin-bottom:0">
+      <p style="padding:12px 14px;font-weight:700;font-size:12px;border-bottom:1px solid var(--border)">financial-systems-architect vs solution-architect</p>
+      <table class="data-table">
+        <thead><tr><th></th><th>FSA</th><th>SA</th></tr></thead>
+        <tbody>
+          <tr><td>Pergunta</td><td>O QUÊ precisa ser feito</td><td>COMO fazer tecnicamente</td></tr>
+          <tr><td>Domínio</td><td>Regulação, compliance, fluxo</td><td>APIs, event-driven, resiliência</td></tr>
+          <tr><td>Ordem</td><td>Primeiro</td><td>Após o FSA</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============================= PLAYBOOKS ============================= -->
+<section id="playbooks" class="section">
+  <div class="section-title"><div class="icon" style="background:rgba(245,158,11,0.15)">📋</div>Playbooks, Skills & Knowledge Base</div>
+  <div class="section-subtitle">Protocolos de execução para tarefas repetidas, skills de produto e base de conhecimento financeiro.</div>
+
+  <div class="section-title" style="font-size:15px;margin-bottom:10px">⚡ Skills de Produto</div>
+  <p style="font-size:13px;color:var(--text2);margin-bottom:16px">As 4 skills são os comandos acionados com <code>/</code> no Claude Code. Dividem-se em dois grupos com propósitos distintos:</p>
+  <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+    <div style="flex:1;min-width:220px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);border-radius:10px;padding:14px 18px">
+      <p style="font-weight:700;font-size:12px;color:#34d399;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">2 Skills — Produto Financeiro</p>
+      <p style="font-size:12px;color:var(--text2);line-height:1.6">Ponto de entrada obrigatório para todo <strong style="color:var(--text)">trabalho de PM</strong>: requirements, discovery, economics, arquitetura, apresentações C-Level. Cada uma roteia para os agentes certos conforme o tipo de demanda.</p>
+    </div>
+    <div style="flex:1;min-width:220px;background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.25);border-radius:10px;padding:14px 18px">
+      <p style="font-weight:700;font-size:12px;color:#22d3ee;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">2 Skills — Artefatos Técnicos</p>
+      <p style="font-size:12px;color:var(--text2);line-height:1.6">Protocolo completo de <strong style="color:var(--text)">desenvolvimento e versionamento do Sprint Board</strong> HTML. Gerenciam todo o ciclo: proposta → aprovação → implementação → nova versão → CHANGELOG → espelho GitHub.</p>
+    </div>
+  </div>
+  <div class="grid-2" style="margin-bottom:24px">
+    <div class="card" style="border-left:3px solid var(--green)">
+      <div class="card-title" style="color:#34d399;font-size:15px">/opea_produto</div>
+      <div style="margin-top:6px;margin-bottom:10px">
+        <span class="tag tag-green">Produto Financeiro</span>
+        <span class="tag tag-green">Opea</span>
+      </div>
+      <div class="card-body">Ponto de entrada obrigatório para <strong style="color:var(--text)">todo trabalho de PM no Opea</strong>. Cobre 8 tipos de demanda: CCB, Asset Ledger, Discovery, Economics/P&L, Requisitos, Arquitetura, Apresentação C-Level e UX. Roteia automaticamente para os agentes corretos por tipo — nunca deixa demanda de produto entrar sem passar por aqui.</div>
+    </div>
+    <div class="card" style="border-left:3px solid var(--amber)">
+      <div class="card-title" style="color:#fbbf24;font-size:15px">/edenred_produto</div>
+      <div style="margin-top:6px;margin-bottom:10px">
+        <span class="tag tag-amber">Produto Financeiro</span>
+        <span class="tag tag-amber">Edenred</span>
+      </div>
+      <div class="card-body">Idem para <strong style="color:var(--text)">todo trabalho de PM no Edenred</strong>. Cobre 6 tipos: Economics/MDR, Jornada transacional, Pricing, Apresentação C-Level, Compliance PAT e Regulação. Alerta PAT 2026 embutido — toda modelagem de economics usa automaticamente os caps vigentes (MDR 3,6% / intercâmbio 2%).</div>
+    </div>
+    <div class="card" style="border-left:3px solid var(--cyan)">
+      <div class="card-title" style="color:#22d3ee;font-size:15px">/opea_jira</div>
+      <div style="margin-top:6px;margin-bottom:10px">
+        <span class="tag tag-cyan">Artefato Técnico</span>
+        <span class="tag tag-cyan">Sprint Board Opea</span>
+      </div>
+      <div class="card-body">Protocolo completo de <strong style="color:var(--text)">desenvolvimento e versionamento do Sprint Board Opea</strong>. Fluxo automatizado: proposta → aprovação → implementação → nova vX.Y.Z → CHANGELOG.md → atualiza README → sincroniza github/. Versão atual: <strong style="color:var(--text)">v1.8.0</strong>.</div>
+    </div>
+    <div class="card" style="border-left:3px solid #f59e0b">
+      <div class="card-title" style="color:#fbbf24;font-size:15px">/edenred_jira</div>
+      <div style="margin-top:6px;margin-bottom:10px">
+        <span class="tag tag-amber">Artefato Técnico</span>
+        <span class="tag tag-amber">Sprint Board Edenred</span>
+      </div>
+      <div class="card-body">Idem para o <strong style="color:var(--text)">Sprint Board Edenred + Calculadora multi-serviços</strong>. Mesma convenção semântica MAJOR.MINOR.PATCH. Versões atuais: Sprint Board <strong style="color:var(--text)">v2.0.0</strong> · Calculadora <strong style="color:var(--text)">v1.0.0</strong>.</div>
+    </div>
+  </div>
+
+  <div class="section-title" style="font-size:15px;margin-bottom:14px">📋 Playbooks de Execução</div>
+  <div class="playbook-card">
+    <div class="playbook-num">1</div>
+    <div>
+      <div class="playbook-title">playbook-html-fix.md</div>
+      <div class="playbook-file">playbooks/playbook-html-fix.md</div>
+      <div class="playbook-desc">Sprint Board: diagnóstico → Passo 0 Mapa de Impacto → mudança → regressão → QA. O Passo 0 lista funções adjacentes, fonte autoritativa dos dados, sessões anteriores. Se &gt;2 funções interdependentes → reclassificar para balanced.</div>
+    </div>
+  </div>
+  <div class="playbook-card">
+    <div class="playbook-num">2</div>
+    <div>
+      <div class="playbook-title">playbook-economics-model.md</div>
+      <div class="playbook-file">playbooks/playbook-economics-model.md</div>
+      <div class="playbook-desc">MDR, P&L, unit economics: 10 passos + templates. Alerta PAT 2026 embutido: premissas antigas vs. reguladas — MDR livre proibido para Edenred.</div>
+    </div>
+  </div>
+  <div class="playbook-card">
+    <div class="playbook-num">3</div>
+    <div>
+      <div class="playbook-title">playbook-executive-deck.md</div>
+      <div class="playbook-file">playbooks/playbook-executive-deck.md</div>
+      <div class="playbook-desc">Decks C-Level: framework SCR, máximo de slides, executive-reviewer obrigatório antes da entrega. Storytelling executivo com problema, impacto, decisão e próximos passos.</div>
+    </div>
+  </div>
+  <div class="playbook-card">
+    <div class="playbook-num">4</div>
+    <div>
+      <div class="playbook-title">playbook-ccb-requirements.md</div>
+      <div class="playbook-file">playbooks/playbook-ccb-requirements.md</div>
+      <div class="playbook-desc">Requisitos de features CCB: cláusulas Lei 10.931/2004, ICP-Brasil, imutabilidade, registro em registradora, formato BDD/Gherkin para critérios de aceite.</div>
+    </div>
+  </div>
+  <div class="playbook-card">
+    <div class="playbook-num">5</div>
+    <div>
+      <div class="playbook-title">playbook-sprint-delivery.md</div>
+      <div class="playbook-file">playbooks/playbook-sprint-delivery.md</div>
+      <div class="playbook-desc">Ciclo completo de entrega: planning → PE → execução → QA → cliente → memória. Flags de background sessions (<code>--model</code>, <code>--effort</code>, <code>--add-dir</code>). Compatibilidade PowerShell Windows.</div>
+    </div>
+  </div>
+  <div class="playbook-card">
+    <div class="playbook-num">6</div>
+    <div>
+      <div class="playbook-title">playbook-session-close.md</div>
+      <div class="playbook-file">playbooks/playbook-session-close.md</div>
+      <div class="playbook-desc">Encerramento de sessão: 4 passos + checklist. Tabela Decisor Rápido de Memória (TMM/SMM/CM). Passo 5 de análise de performance periódica. Acionado quando qualquer arquivo foi alterado.</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="section-title" style="font-size:15px;margin-bottom:14px">📚 Knowledge Base & Context Files</div>
+  <div class="grid-2">
+    <div>
+      <p style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px">Context Files — O que é o produto</p>
+      <div class="table-wrap" style="margin-bottom:16px">
+        <table class="data-table">
+          <thead><tr><th>Arquivo</th><th>Conteúdo</th></tr></thead>
+          <tbody>
+            <tr><td><code>context/business/opea.md</code></td><td>Instrumentos financeiros, Sprint Board (restrições absolutas), AS-IS dos fluxos</td></tr>
+            <tr><td><code>context/business/edenred.md</code></td><td>Modelo de negócio, arranjo fechado, economics, métricas-chave</td></tr>
+            <tr><td><code>context/business/brq.md</code></td><td>Papel do PM, tom executivo, benchmarks de qualidade</td></tr>
+            <tr><td><code>context/regulatory/bacen-normas.md</code></td><td>Normas BACEN por produto: CCB, PIX, arranjos, KYC/AML, LGPD</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div>
+      <p style="font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px">Knowledge Base — Por que o mercado funciona assim</p>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Arquivo</th><th>Cobre</th></tr></thead>
+          <tbody>
+            <tr><td><code>knowledge/banking/ecossistema-bancario-brasil.md</code></td><td>SFN, SPB, BaaS, Open Finance</td></tr>
+            <tr><td><code>knowledge/payments/infraestrutura-pagamentos.md</code></td><td>Cartões, MDR, PIX, recebíveis, chargebacks</td></tr>
+            <tr><td><code>knowledge/regulatory/interpretacoes-praticas.md</code></td><td>CCB, PIX, KYC, arranjos, LGPD aplicada</td></tr>
+            <tr><td><code>knowledge/squad-learnings/padroes-e-aprendizados.md</code></td><td>Bugs do squad, padrões aprovados, armadilhas a evitar</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="section-title" style="font-size:15px;margin-bottom:14px">🔁 Template Library & Implementations Registry</div>
+  <div class="card">
+    <div class="card-body">
+      <p style="margin-bottom:12px">O Orchestrator verifica se existe template antes de rotear. Se existe → modo <span class="tag tag-green">ADAPT</span>. Se não → modo <span class="tag tag-blue">BUILD</span> e cria template ao final.</p>
+      <div class="grid-2" style="gap:12px">
+        <div>
+          <p style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">Templates disponíveis</p>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:5px;font-size:12px">
+            <li><code>templates/opea/sprint-board-fix.md</code></li>
+            <li><code>templates/opea/new-feature.md</code></li>
+            <li><code>templates/edenred/sprint-board-fix.md</code></li>
+            <li><code>templates/edenred/economics-model.md</code></li>
+          </ul>
+        </div>
+        <div>
+          <p style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">Implementations Registry</p>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:5px;font-size:12px">
+            <li><code>memory/projects/opea/implementations.md</code></li>
+            <li><code>memory/projects/edenred/implementations.md</code></li>
+          </ul>
+          <p style="font-size:11px;color:var(--text3);margin-top:8px">Mantidos pelo strategic-memory-manager após cada entrega</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================= GOVERNANÇA ============================= -->
+<section id="governanca" class="section">
+  <div class="section-title"><div class="icon" style="background:rgba(139,92,246,0.15)">⚖️</div>Governança e Evolução Contínua</div>
+  <div class="section-subtitle">O squad evolui através de ciclos de pesquisa → sugestão → aprovação → implementação. Nenhuma mudança é aplicada sem aprovação humana.</div>
+
+  <div class="section-title" style="font-size:15px;margin-bottom:14px">🔄 Ciclo de Evolução</div>
+  <div class="gov-cycle">
+    <div class="gov-step">
+      <div class="gov-step-icon" style="background:rgba(6,182,212,0.15)">🔍</div>
+      <div class="gov-step-title">Research Agent</div>
+      <div class="gov-step-desc">Monitora BACEN, PIX, fintech, Claude/Anthropic. Roda seg-sex 9:30h</div>
+    </div>
+    <div class="gov-arrow">→</div>
+    <div class="gov-step">
+      <div class="gov-step-icon" style="background:rgba(245,158,11,0.15)">📁</div>
+      <div class="gov-step-title">suggestions/</div>
+      <div class="gov-step-desc">ALERTA_CRITICO (urgente) ou SUGESTAO_MELHORIA (normal)</div>
+    </div>
+    <div class="gov-arrow">→</div>
+    <div class="gov-step">
+      <div class="gov-step-icon" style="background:rgba(59,130,246,0.15)">👤</div>
+      <div class="gov-step-title">Aprovação PM</div>
+      <div class="gov-step-desc">Aprovado, rejeitado ou modificado pelo usuário</div>
+    </div>
+    <div class="gov-arrow">→</div>
+    <div class="gov-step">
+      <div class="gov-step-icon" style="background:rgba(16,185,129,0.15)">✅</div>
+      <div class="gov-step-title">approved/</div>
+      <div class="gov-step-desc">Mudança aplicada + registrada em changelog</div>
+    </div>
+    <div class="gov-arrow">→</div>
+    <div class="gov-step">
+      <div class="gov-step-icon" style="background:rgba(239,68,68,0.15)">❌</div>
+      <div class="gov-step-title">rejected/</div>
+      <div class="gov-step-desc">Motivo + condição para reavaliar documentados</div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="gap:16px;margin-bottom:24px">
+    <div class="card">
+      <div class="card-title" style="margin-bottom:12px">🌅 Protocolo de Início de Sessão</div>
+      <div class="card-body">
+        <ol style="list-style:decimal;padding-left:16px;display:flex;flex-direction:column;gap:8px">
+          <li>Verificar arquivos com status <code>PENDENTE</code> em <code>suggestions/</code></li>
+          <li>Se houver: alertar o usuário <strong>antes</strong> de qualquer outra atividade</li>
+          <li>Oferecer opções do Research Agent (A/B/C/D)</li>
+          <li>Se não houver pendências: prosseguir normalmente</li>
+        </ol>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="margin-bottom:12px">✅ Obrigações Pós-Entrega</div>
+      <div class="card-body">
+        <p style="margin-bottom:10px">Após qualquer mudança no squad, atualizar <strong>todos em conjunto</strong>:</p>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:8px">
+          <li>📝 <code>changelog/changelog.md</code> — O quê e quando</li>
+          <li>📖 <code>Documentacao_Claude/squad-arquitetura-e-evolucao.md</code> — Estado atual</li>
+          <li>🔗 <code>Github/Documentacao_Claude/squad-arquitetura-e-evolucao.md</code> — Espelho</li>
+          <li>🌐 <code>Organizacao_Squad/squad-overview.html</code> — Este artefato</li>
+          <li>📄 <code>Organizacao_Squad/COMO-ATUALIZAR.md</code> — Instrução de atualização</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="section-title" style="font-size:15px;margin-bottom:14px">📏 Regras Invioláveis</div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Regra</th><th>Detalhamento</th></tr></thead>
+      <tbody>
+        <tr>
+          <td style="font-weight:700;white-space:nowrap">Protocolo PE→Orchestrator</td>
+          <td>Obrigatório em toda execução não-conversacional. "Continuação de fix" não isenta. Demandas emergentes durante execução precisam de proposta → aprovação → PE → Orchestrator.</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;white-space:nowrap">Versionamento imutável</td>
+          <td>Versões do Sprint Board são imutáveis. Nunca sobrescrever pasta vX.Y.Z existente. Sempre criar nova versão. Exceção apenas com pedido explícito do usuário.</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;white-space:nowrap">Disciplina de escopo</td>
+          <td>Tocar APENAS o que foi solicitado. Sprint Board tem ~8.000 linhas — não refatorar adjacente. Se encontrar problema fora do escopo: parar, descrever, pedir autorização antes de tocar.</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;white-space:nowrap">Ponto de entrada por skill</td>
+          <td>Toda demanda de produto financeiro entra via /opea_produto ou /edenred_produto. Sprint Board entra via /opea_jira ou /edenred_jira. Se não usar a skill, sugerir proativamente antes de responder.</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;white-space:nowrap">Documentação obrigatória</td>
+          <td>Toda evolução do squad, por menor que seja, atualiza changelog + squad-arquitetura-e-evolucao + Github/. Os três se movem juntos — nunca atualizar um sem os outros.</td>
+        </tr>
+        <tr>
+          <td style="font-weight:700;white-space:nowrap">Context file antes de executar</td>
+          <td>Todo agente executor lê o context file do produto (opea.md ou edenred.md) antes de iniciar qualquer tarefa de produto. Pular este passo aumenta taxa de retrabalho.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="divider"></div>
+  <div class="section-title" style="font-size:15px;margin-bottom:14px">🐛 Aprendizados Técnicos Críticos</div>
+  <div class="grid-2" style="gap:12px">
+    <div class="card" style="border-left:3px solid var(--red)">
+      <div class="card-title">Bug #1 — let vs window.*</div>
+      <div class="card-body" style="margin-top:8px"><strong>Sintoma:</strong> Dados errados entre abas / calculadora bloqueada.<br><strong>Causa:</strong> <code>let</code> tem escopo de bloco — isolamento no artifact viewer.<br><strong>Regra:</strong> Toda variável global usa <code>window.nomeVariavel</code>, nunca <code>let</code>/<code>const</code>.</div>
+    </div>
+    <div class="card" style="border-left:3px solid var(--red)">
+      <div class="card-title">Bug #2 — data: URL vs srcdoc</div>
+      <div class="card-body" style="margin-top:8px"><strong>Sintoma:</strong> Calculadora iframe não abria no artifact viewer.<br><strong>Causa:</strong> <code>data:</code> URL bloqueado por CSP em artifact viewers.<br><strong>Regra:</strong> Iframes com conteúdo inline usam <code>srcdoc="..."</code>, nunca <code>src="data:text/html,..."</code>.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================= EVOLUÇÃO ============================= -->
+<section id="evolucao" class="section">
+  <div class="section-title"><div class="icon" style="background:rgba(16,185,129,0.15)">📅</div>Histórico de Evolução</div>
+  <div class="section-subtitle">De 2 agentes genéricos (v1.0) a 27 agentes especializados em produtos financeiros (v1.9.14). Versão atual: <strong>v1.9.14 — 2026-05-23</strong>.</div>
+
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-version">v1.9.14 — 2026-05-23</div>
+      <div class="tl-title">Calibração de Usuário no CLAUDE.md</div>
+      <div class="tl-desc">Seção CALIBRAÇÃO DE COMUNICAÇÃO adicionada: idioma/tom, nível de senioridade, 5 analogias de referência (frame mental do PM), 6 princípios inegociáveis. Novo arquivo context/templates/workflows.md com 5 workflows padrão por tipo de tarefa. Fonte: documento pessoal CLAUDE.md — Vitor Hugo Dvorschi.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot tl-dot-major"></div>
+      <div class="tl-version tl-version-major">v1.9.13 — 2026-05-23</div>
+      <div class="tl-title">Modularização do CLAUDE.md + Limpeza de Ruído Semântico</div>
+      <div class="tl-desc">CLAUDE.md raiz refatorado: 852 → 233 linhas (redução de 73%). Wrapper Python morto removido (bug crítico que embrulhava 810 linhas em código não-executável). Seções redundantes de identidade eliminadas (5 repetições → 1). Contexto de projetos extraído para CLAUDE.md hierárquico em Opea_Jira/ e Edenred_Jira/. Templates de entrega movidos para context/templates/ (7 arquivos: apresentacoes, requisitos, economics, ux-discovery, analytics, engenharia, compliance). Governança e regras operacionais preservadas intactas. Ganho estimado: ~5k tokens liberados por sessão.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-version">v1.9.12 — 2026-05-21</div>
+      <div class="tl-title">Quadro de Cerimônias na Visão Geral</div>
+      <div class="tl-desc">Adicionado quadro de cerimônias do squad na aba Visão Geral: Daily (Seg–Sex 09:30), Planning (Seg, início de sprint), Review/Demo e Retrospectiva (Sex, fim de sprint), cada uma com resumo da última sessão realizada.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot tl-dot-major"></div>
+      <div class="tl-version tl-version-major">v1.9.11 — 2026-05-21</div>
+      <div class="tl-title">Dashboard Visual + Consolidação de Documentação</div>
+      <div class="tl-desc">Dashboard HTML premium criado (squad-overview.html — 8 abas, standalone). Pasta raiz Documentacao_Claude/ consolidada para Github/Documentacao_Claude/ (fonte única). Github/Organizacao_Squad/ criado como espelho. Cadeia de sync obrigatória atualizada em todos os protocolos: changelog + squad-arquitetura + squad-overview + Github/.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-version">v1.9.10 — 2026-05-20</div>
+      <div class="tl-title">Governança de Sugestões + Stack Técnica + Curadoria de Memória</div>
+      <div class="tl-desc">Avaliação crítica de proposta externa (Python/LangGraph/SQLite) — 5 novos agentes rejeitados por redundância. 6 ajustes cirúrgicos aplicados: rejected/ criado, research-agent com Stack Técnica, SMM com Curadoria Periódica, ai-operations-analyst com análise de consistência, Github/ corrigido e sincronizado. Override explícito do congelamento autorizado pelo PM.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-version">v1.9.9 — 2026-05-20</div>
+      <div class="tl-title">Auditoria P1 — Correções de Modelo, Registro e Knowledge Base</div>
+      <div class="tl-desc">Auditoria completa (3 dimensões paralelas). 5 gaps P1 corrigidos: executive-storyteller com modelo errado (sonnet→opus), ux-researcher ausente do capability-registry, opea_produto com routing incorreto, CCB sem Duplicata Escritural Digital, MDR sem Decreto 12.712/2025.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-version">v1.9.8 — 2026-05-20</div>
+      <div class="tl-title">Template Library, Implementations Registry e Protocolo de Reuso</div>
+      <div class="tl-desc">Sistema de templates que torna o squad mais inteligente a cada entrega: orchestrator verifica template disponível (ADAPT vs BUILD), SMM atualiza registry após cada entrega. Eliminação de retrabalho recorrente entre sessões.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-version">v1.9.7 — 2026-05-19</div>
+      <div class="tl-title">Marcos Entregáveis + Governança de Uso + Freeze + Research Agent Calibrado</div>
+      <div class="tl-desc">Solução de Marcos Entregáveis no Sprint Board Opea (5 layouts, edição inline, export). Protocolo de entrada obrigatório via skills de produto. Congelamento de features até 2026-06-03. Research-agent com filtro de relevância específico por produto.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-version">v1.9.6 — 2026-05-19</div>
+      <div class="tl-title">Claude Code mai/2026 + Rotina Remota Research-Agent</div>
+      <div class="tl-desc">Flags de background sessions documentados no orchestrator. Rotina remota do research-agent criada (seg-sex 9:30h, primeira execução 20/05/2026).</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot tl-dot-major"></div>
+      <div class="tl-version tl-version-major">v1.9.5 — 2026-05-18</div>
+      <div class="tl-title">Governança Baseada em Métricas — Skills /opea_produto e /edenred_produto criadas</div>
+      <div class="tl-desc">Primeiro dashboard do ai-metrics-analyst revelou 20/26 agentes com 0 ativações. Causa raiz: sem ponto de entrada para produto. Skills de produto criadas + ux-researcher adicionado. Squad total: 27 agentes. Agendamento periódico do ai-metrics-analyst.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-version">v1.9.4 — 2026-05-18</div>
+      <div class="tl-title">Governança Baseada em Métricas — 3 recomendações P1</div>
+      <div class="tl-desc">Gate de protocolo no orchestrator, threshold de task-memory abaixado, tracking formal de retrabalho no frontend-developer. Primeiro ciclo dados → análise → melhoria.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot tl-dot-major"></div>
+      <div class="tl-version tl-version-major">v1.9.3 — 2026-05-18</div>
+      <div class="tl-title">Versionamento Edenred Sprint Board + Skill /edenred_jira</div>
+      <div class="tl-desc">Paridade com sistema de versionamento Opea. Sprint Board e Calculadora multi-serviços com semântica MAJOR.MINOR.PATCH. Baseline: Sprint Board v1.0.0, Calculadora v1.0.0 (migrado do ad-hoc v8).</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot tl-dot-major"></div>
+      <div class="tl-version tl-version-major">v1.9.0 — 2026-05-18</div>
+      <div class="tl-title">Primeiro Deploy Real do Squad</div>
+      <div class="tl-desc">Descoberta crítica: .claude/agents/ estava vazio desde a criação. Os 26 agentes existiam apenas em Github/agents/. Todos copiados para .claude/agents/ — squad ativo pela primeira vez. Mudança mais significativa desde a criação.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-version">v1.9.2 — 2026-05-15</div>
+      <div class="tl-title">Versionamento Opea Sprint Board + Skill /opea_jira</div>
+      <div class="tl-desc">Controle semântico de versão para Sprint Board Opea. Histórico retroativo: v1.0.0 (12/05) a v1.3.0 (18/05). Skill /opea_jira com protocolo completo de versionamento automático.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-version">v1.8.5 a v1.8.7 — 2026-05-13 a 2026-05-15</div>
+      <div class="tl-title">Prevenção de Regressão, Sub-agentes e Paralelização</div>
+      <div class="tl-desc">Passo 0 Mapa de Impacto no playbook-html-fix. Regra inviolável de protocolo mesmo em "continuação". Frontend-developer customizado criado. Padrões de paralelização no orchestrator. Knowledge base propagada com bugs #3, #4, #5.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot tl-dot-major"></div>
+      <div class="tl-version tl-version-major">v1.8 — 2026-05-13</div>
+      <div class="tl-title">Camada de Operação: Runtime, Métricas e Inteligência Proativa</div>
+      <div class="tl-desc">4 novos agentes de operação: task-memory-manager, execution-engine, capability-registry, ai-metrics-analyst. Cascade proativo para ALERTA_CRITICO. Squad total: 25 agentes.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-version">v1.9.0 / v1.0 Teams — 2026-05-12</div>
+      <div class="tl-title">Teams Intelligence System</div>
+      <div class="tl-desc">Scripts Python CLI para capturar histórico de conversas 1:1 do Teams via Microsoft Graph API. Classifica por domínio financeiro, aprende estilo de comunicação, gera FAQ e perfil vitor-style.md. Ferramenta de integração externa — não é agente do squad.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot tl-dot-major"></div>
+      <div class="tl-version tl-version-major">v1.7 — 2026-05-12</div>
+      <div class="tl-title">Sub-agentes de Domínio (Onda 1 + Onda 2)</div>
+      <div class="tl-desc">5 sub-agentes especializados: ccb-structuring-engine, ledger-specialist, spi-spb-architect (filho de FSA) + mdr-pricing-analyst, pnl-modeler (filho de PEA). Squad total: 21 agentes.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-version">v1.5 — 2026-05-10</div>
+      <div class="tl-title">Aplicação de Sugestões Críticas — PAT, PIX MED 2.0, Agent View</div>
+      <div class="tl-desc">PAT Fase 2 em vigor (mai/2026), PIX MED 2.0 (fev/2026), Claude Code Agent View. Context files e playbooks atualizados com regulação vigente.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot tl-dot-major"></div>
+      <div class="tl-version tl-version-major">v1.6 — 2026-05-10</div>
+      <div class="tl-title">Pacote de Publicação GitHub</div>
+      <div class="tl-desc">Squad empacotado para publicação aberta: Github/ com README, instaladores PowerShell e Bash, CLAUDE.md template, 16 agentes e toda a knowledge base sanitizada.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-version">v1.3 — 2026-05-08</div>
+      <div class="tl-title">Sistema de Evolução Contínua</div>
+      <div class="tl-desc">Knowledge Base (4 arquivos), infraestrutura de memória (decisions/, operations-log), governança de sugestões (suggestions/ + approved/ + changelog/), Research Agent com rotina 9:30h.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-version">v1.2 — 2026-05-07</div>
+      <div class="tl-title">Context Files, Playbooks e Revisão Executiva</div>
+      <div class="tl-desc">4 context files criados (opea, edenred, brq, bacen-normas). 5 playbooks criados. Regra: todo agente lê context file antes de executar.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-version">v1.1 — 2026-05-06</div>
+      <div class="tl-title">Agentes Especializados Instalados</div>
+      <div class="tl-desc">5 agentes adicionados: context-manager, payments-economics-analyst, solution-architect, data-product-strategist, executive-reviewer. Orchestrator melhorado com boundaries explícitos e fast lane objetiva.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot tl-dot-major"></div>
+      <div class="tl-version tl-version-major">v1.0 — 2026-05-05</div>
+      <div class="tl-title">Squad Fundacional</div>
+      <div class="tl-desc">prompt-engineer + orchestrator + agentes genéricos do catálogo Claude Code. Nenhum contexto financeiro, sem playbooks, sem sub-agentes. Ponto de partida.</div>
+    </div>
+  </div>
+</section>
+
+</div><!-- /main -->
+
+<div style="background:var(--surface);border-top:1px solid var(--border);padding:16px 32px;font-size:11px;color:var(--text3);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+  <span>Squad de IA — Financial Product Copilot · BRQ Digital Solutions · PM Sênior VI</span>
+  <span>v1.9.12 · Última atualização: 2026-05-21 · Atualizar este arquivo após toda evolução do squad</span>
+</div>
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+function filterAgents(layer, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.agent-card').forEach(card => {
+    if (layer === 'all' || card.dataset.layer === layer) {
+      card.style.display = '';
+    } else {
+      card.style.display = 'none';
+    }
+  });
+}
+</script>
+</body>
+</html>

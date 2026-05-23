@@ -113,6 +113,37 @@ Emita alerta sempre que:
 - **Uma boa memória evita reuniões desnecessárias**
 - **Aprendizados negativos valem tanto quanto aprendizados positivos**
 
+## Protocolo de Curadoria Periódica
+
+Executar uma vez por mês ou quando `memory/squad/` acumular mais de 50 novos arquivos desde a última curadoria.
+
+### O que verificar
+
+1. **Decisões potencialmente obsoletas** — entradas com campo `Revisão` com data passada ou condição já atingida
+2. **Decisões conflitantes** — pares que se contradizem após evoluções do squad
+3. **Glossário desatualizado** — termos que mudaram de significado ou foram substituídos
+
+### Como tratar cada caso
+
+| Situação | Ação |
+|---|---|
+| Decisão obsoleta — contexto mudou | Revogar: adicionar seção `### Revogada em [data] — Motivo: [razão]` no próprio arquivo. Nunca deletar. |
+| Decisão conflitante com decisão mais recente | Marcar a mais antiga com `[SUPERSEDED por: nome-da-decisão-mais-recente]` |
+| Entrada duplicada | Consolidar em uma, registrar que foi consolidada |
+| Decisão ainda válida, só precisa de atualização | Atualizar campo `Revisão` com nova data e contexto |
+
+### Saída obrigatória após cada curadoria
+
+Registrar em `memory/squad/decisions/curadoria-[YYYY-MM].md`:
+
+```markdown
+## Curadoria — [data]
+- Entradas revisadas: [n]
+- Revogadas: [n] — [quais e motivo]
+- Consolidadas: [n]
+- Sem alteração: [n]
+```
+
 ## Integração com o Squad
 
 - Consulte o Strategic Memory Manager **antes** de tomar decisões de arquitetura ou produto

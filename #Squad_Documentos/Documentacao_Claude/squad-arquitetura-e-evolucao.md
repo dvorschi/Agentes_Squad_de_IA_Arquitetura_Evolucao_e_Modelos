@@ -1,7 +1,7 @@
 # Squad de IA — Arquitetura, Evolução e Modelos de Trabalho
 
 > Documento vivo. Descreve o squad de IA de produtos financeiros da BRQ Digital Solutions — sua origem, arquitetura atual, fluxos de trabalho e modelo de governança.
-> Última atualização: 2026-05-14 | Versão atual: v1.8.1
+> Última atualização: 2026-05-23 | Versão atual: v1.9.14
 
 ---
 
@@ -105,6 +105,347 @@ O squad é um conjunto de agentes de IA especializados que trabalham de forma co
 
 ---
 
+### v1.9.3 — Sistema de Versionamento Edenred Sprint Board + Skill `/edenred_jira`
+
+**Contexto:** PM solicitou paridade com o sistema de versionamento do Opea Sprint Board (v1.9.2). O artefato Edenred (edenred_sprint_board_mobbyhub.html) e a calculadora de multi-serviços (anteriormente versionada ad-hoc como v6, v7, v8) agora têm controle semântico de versão, estrutura de pastas por versão, CHANGELOG.md por entrega e espelho para GitHub.
+
+**O que foi construído:**
+
+| Caminho | Descrição |
+|---|---|
+| `Edenred_Jira/edenred_sprint_board/vX.Y.Z/` | Versão versionada do HTML com CHANGELOG.md |
+| `Edenred_Jira/edenred_sprint_board/calculadoras/vX.Y.Z/` | Calculadora multi-serviços versionada com CHANGELOG.md |
+| `Edenred_Jira/edenred_sprint_board/README.md` | Índice de versões e convenção semântica |
+| `Edenred_Jira/github/edenred_sprint_board/` | Espelho sincronizado para publicação no GitHub |
+| `.claude/commands/edenred_jira.md` | Skill com protocolo completo de desenvolvimento e versionamento automático |
+
+**Versão baseline:** v1.0.0 (18/05) — migração do histórico ad-hoc (v6, v7, v8) para versionamento semântico
+
+**Convenção:** MAJOR.MINOR.PATCH — Redesign / Feature / Bug fix (idêntico ao Opea)
+
+**Fluxo automatizado pelo skill `/edenred_jira`:**
+1. Apresentar solução → aguardar aprovação → implementar
+2. Calcular nova versão → criar pasta vX.Y.Z/ → CHANGELOG.md → atualizar README → sincronizar github/
+
+---
+
+### v1.9.14 — Calibração de Usuário no CLAUDE.md (2026-05-23)
+
+**Contexto:** Documento pessoal do PM (CLAUDE.md — Vitor Hugo Dvorschi) identificado como fonte de calibrações que o agente não conhecia: frame mental, analogias específicas, princípios de trabalho e workflows por tipo de tarefa.
+
+**O que foi implementado:**
+
+| Artefato | Mudança |
+|---|---|
+| `CLAUDE.md` | ADICIONADO — seção `# CALIBRAÇÃO DE COMUNICAÇÃO`: idioma/tom, calibração de senioridade, 5 analogias de referência, 6 princípios inegociáveis. 233 → 265 linhas. |
+| `context/templates/workflows.md` | CRIADO — 5 workflows padrão por tipo de tarefa: Decisão de Produto, PRD, Análise Executiva, Pesquisa/Benchmarking, Arquitetura de IA. |
+
+**Por que importa:** Sem as analogias e princípios, o agente não tem como usar o frame mental do usuário ao explicar conceitos ou priorizar soluções. Os princípios inegociáveis funcionam como filtro implícito em toda resposta.
+
+---
+
+### v1.9.13 — Modularização do CLAUDE.md + Limpeza de Ruído Semântico (2026-05-23)
+
+**Contexto:** Análise multi-agente (prompt-engineer, architect-reviewer, technical-lead) identificou que o CLAUDE.md tinha um bug crítico de formato: 810 das 852 linhas estavam embrulhadas em um wrapper Python morto que nunca executava, gerando ruído semântico. Adicionalmente, a identidade do agente aparecia 5 vezes em seções diferentes, e templates de entrega eram carregados em cada sessão mesmo quando não usados (~7k tokens/sessão de overhead).
+
+**O que foi implementado:**
+
+| Artefato | Mudança |
+|---|---|
+| `CLAUDE.md` | REFATORADO — 852 → 233 linhas (73% de redução). Wrapper Python removido. Seções redundantes eliminadas: IDENTIDADE DO AGENTE, ÁREAS DE ESPECIALIDADE (~130 linhas em 5 subseções), MENTALIDADE ESPERADA, RESULTADO ESPERADO, PADRÃO DE QUALIDADE. Contexto profissional comprimido para 2 linhas. Seção "Leitura Obrigatória" (context files, playbooks, knowledge base) adicionada diretamente no CLAUDE.md raiz. |
+| `Opea_Jira/CLAUDE.md` | CRIADO — Contexto do projeto Opea (ativos CCB/CPR/CPRF/NC/CCV/PCV, temas, objetivo, versão atual do Sprint Board). Carregado automaticamente pelo Claude Code ao trabalhar na pasta. |
+| `Edenred_Jira/CLAUDE.md` | CRIADO — Contexto do projeto Edenred (temas MDR/interchange/TPV, economics, objetivo, versão atual). Idem. |
+| `context/templates/apresentacoes.md` | CRIADO — Template de apresentações executivas C-Level extraído do CLAUDE.md |
+| `context/templates/requisitos.md` | CRIADO — Template de requisitos & produto (12 seções) |
+| `context/templates/economics.md` | CRIADO — Template de economics & P&L com variáveis e diferenciações |
+| `context/templates/ux-discovery.md` | CRIADO — Template de UX e discovery |
+| `context/templates/analytics.md` | CRIADO — Template de big data & analytics com 5 categorias de indicadores |
+| `context/templates/engenharia.md` | CRIADO — Template de engenharia, dev e automação |
+| `context/templates/compliance.md` | CRIADO — Template de compliance & regulação |
+
+**Estrutura modular resultante:**
+```
+CLAUDE.md raiz (~233 linhas)      ← identidade + modelo raciocínio + governança + leitura obrigatória
+Opea_Jira/CLAUDE.md               ← contexto Opea (carregado automaticamente na pasta)
+Edenred_Jira/CLAUDE.md            ← contexto Edenred (carregado automaticamente na pasta)
+context/templates/*.md (7 arquivos) ← templates de entrega, consultados sob demanda
+```
+
+**Por que importa:** Token budget liberado (~5k tokens/sessão). Contexto de projetos isolado por pasta (não carrega Edenred quando trabalhando em Opea e vice-versa). Templates ficam disponíveis para consulta sem poluir o contexto base. Bug crítico do wrapper Python corrigido.
+
+---
+
+### v1.9.12 — Quadro de Cerimônias na Visão Geral (2026-05-21)
+
+**Contexto:** Squad sem visibilidade centralizada das cerimônias ativas e suas últimas realizações no dashboard visual.
+
+**O que foi implementado:**
+- `Organizacao_Squad/squad-overview.html`: Adicionado quadro de cerimônias na aba Visão Geral — Daily (Seg–Sex 09:30), Planning (Seg, início de sprint), Review/Demo e Retrospectiva (Sex, fim de sprint), com resumo da última sessão de cada cerimônia.
+
+---
+
+### v1.9.11 — Dashboard Visual + Consolidação de Documentação (2026-05-21)
+
+**Contexto:** Squad sem artefato visual consolidado — quem precisava entender a arquitetura, agentes ou governança tinha que ler múltiplos arquivos de texto. Documentação dividida entre raiz `Documentacao_Claude/` e `Github/Documentacao_Claude/`, criando risco de dessincronização.
+
+**O que foi implementado:**
+
+| Artefato | Mudança |
+|---|---|
+| `Organizacao_Squad/squad-overview.html` | CRIADO — dashboard premium HTML standalone (90KB, 8 abas): visão executiva, arquitetura de camadas, 27 agentes com filtro, 4 modos de execução, 4 skills com contexto 2+2, 6 playbooks, knowledge base, governança e timeline de evolução v1.0→v1.9.11 |
+| `Organizacao_Squad/COMO-ATUALIZAR.md` | CRIADO — protocolo de atualização do dashboard: quando atualizar, o que mudar no HTML para cada tipo de evolução, fluxo completo de 6 passos |
+| `Github/Organizacao_Squad/` | CRIADO — espelho de `Organizacao_Squad/` na pasta de publicação Github/ |
+| `Github/Documentacao_Claude/` | CONSOLIDADO — pasta raiz `Documentacao_Claude/` removida; `Github/Documentacao_Claude/` passa a ser fonte única |
+| `Github/CLAUDE.md`, `CLAUDE.md`, `memory/feedback_documentacao_squad.md` | ATUALIZADOS — todos os protocolos, memória e playbooks refletem nova cadeia de sync (4 arquivos obrigatórios) |
+
+**Nova cadeia de sync obrigatória:**
+1. `changelog/changelog.md`
+2. `Github/Documentacao_Claude/squad-arquitetura-e-evolucao.md` (fonte única)
+3. `Organizacao_Squad/squad-overview.html`
+4. `Github/Organizacao_Squad/squad-overview.html`
+
+**Por que importa:** O squad agora tem um artefato visual de referência — qualquer pessoa (PM, novo agente, stakeholder) pode abrir o HTML no browser e entender o squad completo em 2 minutos. A consolidação da Documentacao_Claude elimina o risco de divergência entre cópias.
+
+---
+
+### v1.9.10 — Rotina de Estudos: Governança de Sugestões + Stack Técnica + Curadoria de Memória (2026-05-20)
+
+**Contexto:** PM compartilhou proposta de AI externo para "rotina de estudos" com Python/LangGraph/SQLite e 5 novos agentes. Squad analisou (ai-operations-analyst, technical-lead, capability-registry) e concluiu: infraestrutura overengineered para ambiente session-based, 5 agentes propostos redundantes com existentes. Resultado: 6 ajustes cirúrgicos aprovados. PM autorizou override explícito do congelamento de features ativo (2026-05-20 a 2026-06-03).
+
+**O que foi implementado:**
+
+| Artefato | Mudança |
+|---|---|
+| `rejected/README.md` | CRIADO — pasta e protocolo para sugestões rejeitadas com formato obrigatório (motivo + condição para reavaliar). Fecha o ciclo de governança das sugestões. |
+| `.claude/agents/research-agent.md` | ATUALIZADO — monitoramento de Stack Técnica: 2 queries na Etapa 1 (Claude Code updates, Python AI stack), 3 novas fontes na Etapa 2 (Claude Code Releases, Anthropic SDK Python, FastAPI Releases), filtro de Stack Técnica na Etapa 3, seção "Novidades Stack Técnica" no template de relatório |
+| `.claude/agents/strategic-memory-manager.md` | ATUALIZADO — Protocolo de Curadoria Periódica: revisão mensal (ou a cada 50 novos arquivos) com regras para revogação, supersede, consolidação e saída obrigatória em `decisions/curadoria-[YYYY-MM].md` |
+| `.claude/agents/ai-operations-analyst.md` | ATUALIZADO — Análise de Consistência Arquitetural adicionada (5 verificações: boundaries duplicados, referências quebradas, conflitos de regra, contagem do squad, cobertura de fluxos) + nova linha na Cadência de Análise |
+| `Github/README.md` | CORRIGIDO — conflito de merge resolvido (mantida versão HEAD simples), contagem atualizada 25→27 agentes, ux-researcher e frontend-developer adicionados |
+| `Github/CLAUDE.md` | CORRIGIDO — 3 placeholders [preencher] substituídos por dados reais (cargo BRQ, Opea, Edenred) + context files atualizados para nomes reais |
+| `Github/` | SINCRONIZADO — research-agent, strategic-memory-manager, ai-operations-analyst, rejected/README.md |
+
+**O que foi rejeitado (e por quê):**
+
+| Proposta | Motivo da rejeição |
+|---|---|
+| Python automation para pesquisa | research-agent já cobre com WebSearch nativo |
+| LangGraph para orquestração | Duplica o orchestrator.md existente; Claude Code já gerencia fluxo |
+| SQLite para persistência | Não persiste entre sessões Claude Code — inútil para o modelo session-based |
+| 5 novos agentes propostos | Todos redundantes: knowledge-curator=SMM, pattern-extractor=task-memory, insight-synthesizer=ai-operations, learning-orchestrator=orchestrator, feedback-collector=TMM |
+
+**Por que importa:** Demonstra o modelo correto de evolução do squad com input externo: análise crítica antes de implementar, rejeição documentada em `rejected/`, ajustes cirúrgicos baseados em gaps reais. O squad continua evolution-ready sem acumular complexidade desnecessária.
+
+---
+
+### v1.9.9 — Auditoria P1: Correções de Modelo, Registro e Knowledge Base (2026-05-20)
+
+**Contexto:** Auditoria completa do squad (Alternativa A — 3 dimensões paralelas: documental, uso real, pesquisa externa) identificou 5 gaps P1 que precisavam de correção imediata. Todos aplicados nesta versão.
+
+**Correções aplicadas:**
+
+| Arquivo | Gap | Correção |
+|---|---|---|
+| `.claude/agents/executive-storyteller.md` | `model: sonnet` quando deveria ser `model: opus` — degradação silenciosa de qualidade em decks C-Level | Alterado para `model: opus` |
+| `.claude/agents/capability-registry.md` | `ux-researcher` criado em v1.9.5 sem entrada no registry — violava protocolo de manutenção | Adicionado bloco completo na seção "Camada de Produto e Estratégia" |
+| `.claude/commands/opea_produto.md` | `ux-researcher` como "opcional" em Discovery; `payments-economics-analyst` ausente como obrigatório em Economics/P&L | `ux-researcher` → obrigatório em Discovery; `payments-economics-analyst` → obrigatório em Economics (PM movido para opcional) |
+| `.claude/agents/ccb-structuring-engine.md` | Duplicata Escritural Digital ausente — risco de elegibilidade de ativos Opea com grandes empresas a partir de jun–out/2026 | Adicionada seção com cronograma e impacto em CCB com garantia de recebíveis |
+| `.claude/agents/mdr-pricing-analyst.md` | Decreto 12.712/2025 ausente — vedação VA/VR PAT para combustível impacta diretamente análise Edenred | Adicionada restrição crítica e distinção obrigatória PAT vs. arranjo fechado não-PAT |
+
+**Gaps novos adicionados ao backlog (não cobertos no capability-registry):**
+- Gap 5: Agente de documentação técnica customizado para versionamento do squad
+- Gap 6: Cobertura compliance/legal para instrumentos regulados (compliance-auditor e legal-advisor ausentes em `.claude/agents/`)
+- Gap 7: Validação de qualidade de dados financeiros (reconciliação de ledger, integridade de gravames)
+
+**Origem:** Auditoria Alternativa A com 3 agentes paralelos (ai-operations-analyst, ai-metrics-analyst, research-agent). Auditoria identificou também 5 itens P2 e 3 itens P3 para versões futuras.
+
+---
+
+### v1.9.8 — Template Library, Implementations Registry e Protocolo de Reuso (2026-05-20)
+
+**Contexto:** Squad reiniciava do zero em cada demanda. Agentes sem memória de implementações anteriores → retrabalho recorrente, bugs já corrigidos reaparecendo, padrões reinventados. PM solicitou sistema que tornasse o squad cada vez mais autônomo e que preservasse conhecimento entre sessões.
+
+**O que foi construído:**
+
+| Artefato | Descrição |
+|---|---|
+| `templates/opea/sprint-board-fix.md` | Template com padrões de código obrigatórios, arquitetura de dados, checklist de regressão para fixes no Sprint Board Opea |
+| `templates/opea/new-feature.md` | Template para features novas com estado próprio no Sprint Board Opea |
+| `templates/edenred/sprint-board-fix.md` | Template equivalente para o Sprint Board Edenred |
+| `templates/edenred/economics-model.md` | Template de economics: decomposição MDR, estrutura P&L, cenários, sensibilidade — com caps PAT 2026 embutidos |
+| `memory/projects/opea/implementations.md` | Implementations Registry Opea: histórico de versões SB v1.0 → v1.7.1, padrões reutilizáveis, bugs corrigidos |
+| `memory/projects/edenred/implementations.md` | Implementations Registry Edenred: SB v1.0 → v2.0, calculadora v1.0, padrões de economics |
+| `.claude/agents/orchestrator.md` | Adicionado: "Protocolo de Reuso — Template Check". Antes de despachar agentes, verificar template disponível → modo ADAPT ou BUILD. Pós-entrega: acionar SMM para atualizar templates e implementations registry. |
+| `knowledge/squad-learnings/padroes-e-aprendizados.md` | Adicionada seção: Sistema de Templates e Implementations Registry |
+
+**Mudança de paradigma:**
+
+| Antes (v1.9.7) | Depois (v1.9.8) |
+|---|---|
+| Agente parte do zero a cada demanda | Orchestrator injeta template como ponto de partida |
+| Bugs corrigidos podem ser reintroduzidos | Implementations Registry registra o que foi corrigido e por quê |
+| Sem rastro do que foi construído | Cada entrega atualiza o registry do projeto |
+| Conhecimento perdido entre sessões | Templates acumulam padrões de código reais |
+
+**Protocolo de manutenção (quem atualiza o quê):**
+- `task-memory-manager` → `memory/squad/tasks/` (operacional)
+- `strategic-memory-manager` → `templates/` + `memory/projects/` + `knowledge/squad-learnings/padroes-e-aprendizados.md` (padrões e histórico)
+
+**Por que importa:** Squad passa a ser mais inteligente a cada entrega, não estacionário. Entrega → padrão → template → próxima entrega começa com contexto.
+
+---
+
+### v1.9.7 — Solução Marcos Entregáveis (Padrão Reutilizável)
+
+**Contexto:** PM da Opea precisava de uma apresentação de marcos de entrega por sprint para o cliente, com visual polido, conteúdo fiel ao quadro do cliente e totalmente editável. A solução foi desenvolvida iterativamente em 1 sessão (2026-05-19) e documentada como padrão reutilizável do squad.
+
+**O que foi construído:**
+
+| Artefato | Descrição |
+|----------|-----------|
+| `Opea_Jira/opea_sprint_board/v1.6.0/opea_sprint_board.html` | Sprint Board com aba "Marcos Entregáveis" — 5 layouts, edição inline completa, export standalone |
+| `Documentacao_Claude/solucao-marcos-entregaveis.md` | Documento de referência completo: modelo de dados, layouts, decisões técnicas, guia de reutilização |
+
+**Capacidades da solução:**
+- **5 layouts** selecionáveis: Kanban Fiel, Kanban Compacto, Premium Dark, Apple Clarity, Apple Midnight
+- **Modelo hierárquico**: sprint → card → items + sections (epico → feature → entregas)
+- **Edição completa**: nome, datas, cores, items, sections — tudo editável inline
+- **Persistência**: `localStorage` — sobrevive a reload sem servidor
+- **Export HTML standalone** — apresentação desacoplada do Sprint Board principal
+- **Badge MVP**: marcação visual de sprint/release alvo
+- **Subitens recuados**: `<span class="mec-sub">` para hierarquia visual dentro de um card
+
+**Decisões técnicas documentadas:**
+- `sections` dentro de cards para representar features dentro de épicos (evita card com nome de feature como título de épico)
+- Títulos de sections visíveis em visualização mas sem fundo colorido — cor aparece só no modo edição
+- Estado global em `window.*` obrigatório (regra do Sprint Board)
+- Items como strings HTML puras: suporte a `<s>strikethrough</s>` e `<span class="mec-sub">`
+
+**Como reutilizar:** Ver `Documentacao_Claude/solucao-marcos-entregaveis.md` — cobre adaptação para outro projeto/cliente em 5 passos.
+
+---
+
+### v1.9.7 — Governança de Uso: Protocolo de Entrada + Freeze + Calibração do Research Agent
+
+**Contexto:** Parecer do squad (2026-05-19) identificou 3 melhorias operacionais prioritárias: (1) falta de protocolo que force o uso das skills de produto; (2) risco de overengineering antes de validar o que foi construído; (3) research-agent com filtro de relevância genérico gerando 75% de ruído.
+
+**O que foi implementado:**
+
+| Arquivo | Mudança |
+|---|---|
+| `CLAUDE.md` | Seção "Governança do Squad — Regras Ativas" adicionada: protocolo de entrada obrigatório via `/opea_produto`/`/edenred_produto` para produto financeiro; congelamento de novas features até 2026-06-03 com condições e exceções documentadas |
+| `.claude/agents/research-agent.md` | Filtro de relevância da Etapa 3 substituído por tabela de contextos específicos (Opea/Edenred/Squad) — achado sem impacto direto não gera arquivo em `suggestions/` |
+| `Github/agents/research-agent.md` | SINCRONIZADO |
+
+**Por que importa:** Estas 3 mudanças atacam causas operacionais, não gaps de capacidade. O squad está completo para o trabalho que precisa fazer. O risco agora é de não uso e de overengineering, não de falta de agentes.
+
+---
+
+### v1.9.6 — Claude Code maio/2026 + Rotina Remota Research-Agent
+
+**Contexto:** Research-agent (varredura 2026-05-19) identificou novidades relevantes do Claude Code para ambientes Windows multi-agente, e foi diagnosticado que a rotina de 9:30h do research-agent nunca havia sido criada como rotina remota — existia apenas como documentação desde v1.3.
+
+**O que foi implementado:**
+
+| Arquivo | Mudança |
+|---|---|
+| `orchestrator.md` | Novos flags de background sessions: `--model`, `--effort`, `--add-dir`, `--settings`, `--mcp-config` documentados com exemplos. Permite orquestração mais precisa — Opus para análise regulatória complexa, Haiku para formatação. |
+| `playbooks/playbook-sprint-delivery.md` | Nota sobre novos flags de background sessions + compatibilidade PowerShell no Windows (shell padrão desde mai/2026) |
+| `research-agent.md` | `--model claude-sonnet-4-6` explícito no comando bg; nota sobre `terminalSequence` para notificação desktop ao final de varreduras longas |
+| Rotina `trig_019Vrhg7KHmHMKVGu9eQr1ZQ` | CRIADA — research-agent 9:30h BRT seg-sex, modelo sonnet, repo GitHub squad. Primeira execução: 20/05/2026. |
+
+**Sugestão aplicada:** `suggestions/2026-05-19-claude-code-hooks-powershell-windows.md` → IMPLEMENTADO
+
+---
+
+### v1.9.5 — Governança Baseada em Métricas (5 Recomendações P1-P5)
+
+**Contexto:** Primeiro dashboard real do `ai-metrics-analyst` (2026-05-18) revelou que 20 de 26 agentes tinham 0 ativações em trabalho de produto real. A causa raiz: o squad foi construído para trabalho financeiro complexo, mas o único ponto de entrada existente (`/opea_jira`, `/edenred_jira`) cobria apenas Sprint Board HTML. Toda demanda de produto real (CCB, MDR, P&L, requisitos, discovery) era resolvida sem o squad.
+
+**O que foi implementado:**
+
+| Arquivo | Mudança |
+|---|---|
+| `.claude/commands/opea_produto.md` | CRIADO — skill de produto Opea: protocolo, 8 tipos de demanda, agentes obrigatórios por tipo, regras invioláveis |
+| `.claude/commands/edenred_produto.md` | CRIADO — skill de produto Edenred: protocolo, 6 tipos de demanda, alerta PAT 2026 embutido, agentes obrigatórios por tipo |
+| `.claude/agents/orchestrator.md` | ATUALIZADO — padrões "Demanda Produto Opea" e "Demanda Produto Edenred" adicionados |
+| `playbooks/playbook-session-close.md` | ATUALIZADO — step condicional de monitoring-frontend-v4 inserido no Passo 1 |
+| CronCreate job 3a9d9883 | AGENDADO — ciclo periódico ai-metrics-analyst em 2026-05-28 |
+| `.claude/agents/ux-researcher.md` | CRIADO — único gap genuíno do squad: UX Research para Opea (jornadas CCB, Asset Ledger) e Edenred (abastecimento, jornada transacional) |
+
+**Squad total: 27 agentes** (26 anteriores + ux-researcher)
+
+**Por que importa:** Esta versão fecha o gap entre a capacidade do squad (26 agentes financeiros especializados) e o uso real (5-6 agentes para Sprint Board). Com `/opea_produto` e `/edenred_produto` como pontos de entrada, e o routing explícito no orchestrator, `business-analyst-financeiro`, `financial-systems-architect`, `payments-economics-analyst` e os sub-agentes financeiros têm agora um caminho direto para ativação em trabalho de produto real.
+
+---
+
+### v1.9.4 — Governança Baseada em Métricas (3 Recomendações P1)
+
+**Contexto:** Primeiro dashboard real do `ai-metrics-analyst` (2026-05-18) revelou 3 gaps críticos que o squad tinha em operação: 43% de violação do protocolo PE→Orchestrator, 57% de cobertura de task memory e frontend-developer v4 sem validação em produção real.
+
+**O que foi implementado:**
+
+| Arquivo | Mudança |
+|---|---|
+| `.claude/agents/orchestrator.md` | Gate de protocolo: avisa quando raw input chega sem PE, exceto fast lane Sprint Board. Baseado em evidência quantitativa, não em regra subjetiva. |
+| `playbooks/playbook-session-close.md` | Threshold de task-memory abaixado: "qualquer arquivo alterado" substitui "2+ agentes". Motivo e evidência documentados inline. |
+| `tests/comportamental/monitoring-frontend-v4.md` | Tracking formal das próximas 5 sessões com frontend-developer — valida se v4 atingiu meta de <20% retrabalho. |
+| `Github/` | Todos os arquivos acima sincronizados. |
+
+**Por que importa:** Esta é a primeira vez que o squad evolui a partir de dados operacionais reais, não de design antecipado. O ai-metrics-analyst foi acionado pela primeira vez e suas 3 recomendações P1 foram implementadas na mesma sessão. O ciclo de dados → análise → melhoria funcionou.
+
+---
+
+### v1.9.2 — Sistema de Versionamento Opea Sprint Board + Skill `/opea_jira`
+
+**Contexto:** PM solicitou controle de versionamento semântico para o artefato HTML do Sprint Planner Opea (publicado como artifact no Claude Web), com estrutura de pastas por versão, documentação de cada entrega e espelho para GitHub.
+
+**O que foi construído:**
+
+| Caminho | Descrição |
+|---|---|
+| `Opea_Jira/opea_sprint_board/vX.Y.Z/` | Versão versionada do HTML com CHANGELOG.md |
+| `Opea_Jira/opea_sprint_board/README.md` | Índice de versões e convenção semântica |
+| `Opea_Jira/github/opea_sprint_board/` | Espelho sincronizado para publicação no GitHub |
+| `.claude/commands/opea_jira.md` | Skill com protocolo completo de desenvolvimento e versionamento automático |
+
+**Versões retroativas migradas:** v1.0.0 (12/05), v1.1.0 (14/05), v1.2.0 (15/05), v1.3.0 (18/05 — atual)
+
+**Convenção:** MAJOR.MINOR.PATCH — Redesign / Feature / Bug fix
+
+**Fluxo automatizado pelo skill `/opea_jira`:**
+1. Apresentar solução → aguardar aprovação → implementar
+2. Calcular nova versão → criar pasta vX.Y.Z/ → CHANGELOG.md → atualizar README → sincronizar github/
+
+---
+
+### v1.9.0 — Teams Intelligence System (Integração Externa)
+
+**Contexto:** PM solicitou sistema para capturar histórico de conversas 1:1 do Microsoft Teams, classificar por domínio financeiro, aprender estilo de comunicação e sugerir respostas futuras — sem n8n, sem servidor, tudo local.
+
+**O que foi construído:** `teams-integration/` — conjunto de scripts Python CLI que integra Microsoft Graph API com Claude API.
+
+**Componentes:**
+
+| Arquivo | Responsabilidade |
+|---|---|
+| `src/auth.py` | MSAL device code flow, token cache persistido em JSON |
+| `src/fetcher.py` | Chats 1:1 via Graph API, paginação, deduplicação, strip HTML |
+| `src/processor.py` | Classificação de conversas por domínio financeiro via Claude API |
+| `src/pattern_engine.py` | Análise de mensagens enviadas, geração de `vitor-style.md` |
+| `src/faq_generator.py` | FAQ .md por categoria (mín. 3 conversas base) |
+| `src/main.py` | CLI: `--fetch`, `--process`, `--patterns`, `--faq`, `--suggest`, `--all` |
+
+**Saída:**
+- `knowledge/teams/history/` — histórico bruto + JSON classificado por data
+- `knowledge/teams/faq/` — FAQ por domínio (ccb, economics, opea, edenred, regulatório)
+- `knowledge/teams/patterns/vitor-style.md` — perfil de estilo de comunicação
+
+**Escopo aprovado:** apenas chats 1:1, sem canais, mensagens de e para o usuário.
+
+**Nota de arquitetura:** Esta não é um agente do squad. É uma ferramenta de integração externa que alimenta a knowledge base do squad com dados reais de conversas do PM.
+
+---
+
 ### v1.8.1 — Consistência Operacional
 
 **O que foi corrigido:**
@@ -143,6 +484,76 @@ O squad é um conjunto de agentes de IA especializados que trabalham de forma co
 - `memory/squad/tasks/` — diretório de memória operacional por tarefa
 
 **Squad total: 25 agentes** (21 anteriores + 4 novos de operação)
+
+---
+
+### v1.9.0 — Deploy Completo do Squad (primeiro deploy real)
+
+**Contexto:** Descoberto em 2026-05-18 durante execução do Teste 01: `.claude/agents/` estava vazio desde a criação do squad. Todos os 26 agentes customizados existiam apenas como documentação em `Github/agents/` — o runtime usava agentes genéricos do catálogo.
+
+**O que foi feito:**
+Todos os 26 arquivos de `Github/agents/` foram copiados para `.claude/agents/`, ativando o squad completo pela primeira vez.
+
+**Impacto:** Esta é a mudança mais significativa desde a criação do squad. A partir de v1.9.0:
+- O `orchestrator` customizado com contexto financeiro, modos de execução e padrões de paralelização está ativo
+- O `prompt-engineer` customizado está ativo
+- O `qa-test-engineer` especializado em produtos financeiros está ativo
+- Os 5 sub-agentes financeiros (CCB, Ledger, SPI, MDR, P&L) estão ativos
+- O `frontend-developer` com Sprint Board constraints está ativo
+- Os 3 agentes de memória customizados estão ativos
+- O `research-agent` financeiro está ativo
+
+**Squad total: 26 agentes ativos** (todos implantados em `.claude/agents/`)
+
+---
+
+### v1.8.7 — Agente Customizado, Conhecimento Propagado e Paralelização
+
+**Contexto:** Terceira rodada de melhorias em 2026-05-15. Gaps: agente executor sem domínio embutido, aprendizados de sessão nunca propagados para base de conhecimento, e sem padrões de paralelização definidos.
+
+**Mudanças aplicadas:**
+
+| Arquivo | Mudança |
+|---|---|
+| `Github/agents/frontend-developer.md` | Criado agente customizado com arquitetura do Sprint Board, restrições absolutas, bugs conhecidos, Passo 0 + pré-mortem e critérios de fast lane/escalação embutidos |
+| `knowledge/squad-learnings/padroes-e-aprendizados.md` | Bugs #3 (data vs localStorage), #4 (currentSprintId stale), #5 (MODULES.label) adicionados |
+| `playbooks/playbook-html-fix.md` | Pré-mortem adicionado ao Passo 0 |
+| `playbooks/playbook-session-close.md` | Passo 3.5 — loop de retroalimentação de conhecimento |
+| `Github/agents/orchestrator.md` | Seção de Padrões de Paralelização com tabela seguro/não-seguro e ganhos esperados |
+
+**Squad total: 26 agentes** (25 anteriores + frontend-developer customizado)
+
+---
+
+### v1.8.6 — Clareza de Roteamento, Sub-agentes e Métricas Periódicas
+
+**Contexto:** Segunda rodada de melhorias de governança em 2026-05-15. Análise identificou 3 gaps adicionais: ambiguidade nos 3 agentes de memória, ai-metrics-analyst e ai-operations-analyst nunca ativados, e 5 sub-agentes financeiros dormentes por falta de critério de roteamento.
+
+**Mudanças aplicadas:**
+
+| Arquivo | Mudança |
+|---|---|
+| `playbooks/playbook-session-close.md` | Tabela Decisor Rápido de Memória (TMM/SMM/CM) + Passo 5 de Análise de Performance periódica |
+| `Github/agents/capability-registry.md` | Critério objetivo de roteamento pai vs sub-agente para FSA e PEA |
+| `CLAUDE.md` | Tabela de roteamento direto para todos os 5 sub-agentes financeiros + alerta de dormência + gatilho periódico de métricas |
+
+**Por que importa:** Sub-agentes existem mas não são usados — não por falta de demanda financeira, mas por falta de sinal claro de quando acioná-los. Agentes de métricas existem mas não têm gatilho definido — ficam dormentes indefinidamente sem o Passo 5.
+
+---
+
+### v1.8.5 — Prevenção de Regressão e Protocolo Inviolável
+
+**Contexto:** Análise de performance do squad (2026-05-13 a 2026-05-15) identificou 3 violações de protocolo PE→Orchestrator e 3 rodadas de regressão numa única tarefa. Causa raiz: escopo de análise estreito do agente executor + "efeito continuação" que isenta incorretamente fixes emergentes do ciclo de governança.
+
+**Mudanças aplicadas:**
+
+| Arquivo | Mudança |
+|---|---|
+| `playbooks/playbook-html-fix.md` | Inserido **Passo 0 — Mapa de Impacto**: antes de qualquer código, listar funções adjacentes, fonte autoritativa dos dados, verificar sessões anteriores. Se >2 funções interdependentes → reclassificar para balanced. |
+| `playbooks/playbook-html-fix.md` | Passo 6 (handoff QA) agora exige entrega do mapa de impacto junto ao QA — prevenção upstream, não só detecção. |
+| `CLAUDE.md` | Adicionada **Regra Inviolável — Protocolo em Qualquer Fix**: "continuação de fix" não isenta do ciclo PE → Orchestrator. Documentado com histórico de incidentes. |
+
+**Por que importa:** O Passo 0 teria evitado a regressão do label de épico (fix aplicado sem inspecionar `sbPopulateColorSelect`) e antecipado o problema `data` vs `localStorage`. A regra no CLAUDE.md fecha o gap de governança que gerou 3 violações consecutivas.
 
 ---
 
@@ -216,7 +627,7 @@ O squad é um conjunto de agentes de IA especializados que trabalham de forma co
 | `Github/changelog/changelog.md` | Formato apenas, sem histórico real |
 | `Github/Documentacao_Claude/` | squad-arquitetura-e-evolucao.md (cópia) |
 
-**Regra de sync:** Toda evolução do squad atualiza em conjunto: `changelog/changelog.md` + `Documentacao_Claude/squad-arquitetura-e-evolucao.md` + `Github/Documentacao_Claude/squad-arquitetura-e-evolucao.md`.
+**Regra de sync (atualizada em 2026-05-21):** Toda evolução do squad atualiza em conjunto: `changelog/changelog.md` + `Github/Documentacao_Claude/squad-arquitetura-e-evolucao.md` (fonte única) + `Organizacao_Squad/squad-overview.html` + `Github/Organizacao_Squad/squad-overview.html`.
 
 ---
 
@@ -318,6 +729,7 @@ O squad é um conjunto de agentes de IA especializados que trabalham de forma co
 |---|---|---|
 | **product-manager** | sonnet | PRDs, épicos, features, histórias de usuário, critérios de aceite, OKRs, roadmaps, backlog. |
 | **executive-storyteller** | opus | Apresentações C-Level, board decks, executive summaries, narrativas estratégicas. |
+| **ux-researcher** | sonnet | Pesquisa qualitativa com usuários: entrevistas, mapeamento de jornada, friction points, personas financeiras. Especializado em Opea (CCB, Asset Ledger) e Edenred (abastecimento, arranjo fechado). |
 
 ### Camada de Memória e Operação
 
@@ -606,8 +1018,9 @@ A rotina agendada:
 
 Após qualquer mudança no squad:
 - Registrar entrada em `changelog/changelog.md`
-- Atualizar `Documentacao_Claude/squad-arquitetura-e-evolucao.md`
-- Sincronizar `Github/Documentacao_Claude/squad-arquitetura-e-evolucao.md` (cópia do item acima)
+- Atualizar `Github/Documentacao_Claude/squad-arquitetura-e-evolucao.md` — fonte única (pasta raiz `Documentacao_Claude/` removida em 2026-05-21)
+- Atualizar `Organizacao_Squad/squad-overview.html` (artefato visual do squad)
+- Sincronizar `Github/Organizacao_Squad/squad-overview.html` (espelho)
 - Acionar Strategic Memory Manager se for decisão estratégica
 
 ---

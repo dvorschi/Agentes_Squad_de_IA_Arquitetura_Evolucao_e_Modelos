@@ -78,6 +78,10 @@ Para demandas que saem da fast lane:
 **Artefato de saída:** Plano de Orquestração com tabela de agentes e ordem de atuação
 
 > **Claude Code Agent View (Research Preview — mai/2026):** Para tarefas longas (geração de requisitos completos, modelagem financeira, deck executivo), usar `claude --bg "tarefa"` para disparar o agente em background e `claude agents` para monitorar todas as sessões ativas em painel unificado. Cada sessão recebe git worktree própria — sem conflitos de arquivo entre agentes simultâneos. Feature em Research Preview: testar antes de adotar como padrão obrigatório.
+>
+> **Flags disponíveis para background sessions (mai/2026):** `--model claude-opus-4-7` (forçar modelo específico), `--effort xhigh` (nível de esforço), `--add-dir <path>` (adicionar diretório ao contexto), `--settings <file>` (configurações customizadas), `--mcp-config <file>` (MCPs específicos). Exemplo: `claude --bg --model claude-opus-4-7 --effort xhigh "FSA: análise regulatória completa do CCB Imobiliário"`.
+>
+> **PowerShell no Windows (mai/2026):** O Claude Code usa PowerShell como shell padrão no Windows. Automações e scripts gerados por agentes neste ambiente devem usar sintaxe PowerShell (`$env:VAR`, backtick para line continuation, `if ($?)` em vez de `&&`). Evitar `export VAR=value`, `2>/dev/null` ou pipes bash — usar equivalentes PowerShell.
 
 ### Fase 4 — Execução pelos Agentes Especializados
 
