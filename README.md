@@ -4,6 +4,8 @@ Squad multi-agente para Claude Code, especializado em produtos financeiros: cré
 
 Desenvolvido para PMs, Product Leads e consultores de produto que atuam em bancos, fintechs e instituições financeiras reguladas.
 
+**Versão atual:** v1.9.19 · **27 agentes** · **4 cadências automáticas**
+
 ---
 
 ## O que é este squad
@@ -98,21 +100,24 @@ Veja `INSTALL.md` para instalação manual passo a passo.
 ## Estrutura de arquivos
 
 ```
-agents/              → 27 agentes Claude Code
+agents/              → 27 agentes Claude Code (.md)
 context/
   business/          → briefing dos seus produtos (preencher)
   regulatory/        → normas BACEN (informação pública)
+  templates/         → templates de entrega por tipo de tarefa
 playbooks/           → protocolos de execução por tipo de tarefa
-  playbook-session-close.md  → protocolo de encerramento de sessão
 knowledge/           → base de conhecimento de domínio financeiro
+  banking/           → ecossistema bancário Brasil
+  payments/          → infraestrutura de pagamentos, MDR, PIX
+  regulatory/        → interpretações práticas BACEN/regulação
+  squad-learnings/   → padrões, bugs documentados, aprendizados
 memory/squad/
   decisions/         → decisões estratégicas por produto
   tasks/             → memória operacional por tarefa
-  operations-log.md  → log geral de execuções
-suggestions/         → melhorias pendentes de aprovação
-approved/            → histórico de decisões de governança
+  operations-log.md  → log geral de execuções (atualizar por sessão)
+suggestions/         → melhorias pendentes de aprovação do PM
+approved/            → histórico de sugestões aprovadas
 changelog/           → versionamento de evoluções do squad
-Documentacao_Claude/ → documentação de arquitetura e evolução
 CLAUDE.md            → instruções para o Claude Code neste projeto
 ```
 
@@ -120,16 +125,32 @@ CLAUDE.md            → instruções para o Claude Code neste projeto
 
 ## Primeiros passos após instalar
 
-1. Preencher os context files em `context/business/` com dados reais dos seus produtos
-2. Ajustar `CLAUDE.md` com seu cargo e contexto profissional
-3. Invocar via Claude Code: `Orquestrador, quero [demanda]`
+1. Preencher `context/business/` com dados reais dos seus produtos
+2. Ajustar `CLAUDE.md` com seu cargo, empresa e contexto profissional
+3. Invocar via Claude Code: `"Orquestrador, quero [demanda]"`
 4. Ao final de cada sessão: seguir `playbooks/playbook-session-close.md`
+
+---
+
+## Cadência automática recomendada
+
+O squad funciona melhor com 3 rotinas recorrentes configuradas em [claude.ai/code/routines](https://claude.ai/code/routines):
+
+| Rotina | Frequência | Função |
+|---|---|---|
+| **research-agent** | Seg-sex 09:30 | Varredura de inteligência externa: BACEN, regulação, Anthropic |
+| **operations-log-lembrete** | Seg-sex 09:40 | Template datado para registrar sessões — mantém rastreabilidade |
+| **ai-metrics-analyst** | Segundas 09:40 | Dashboard semanal de KPIs: retries, QA, ativação de agentes |
+
+Configure via `/schedule` no Claude Code ou crie manualmente em claude.ai/code/routines.
+
+**Por que importa:** sem operations log atualizado, o ai-metrics-analyst não tem dados reais para análise. Sem research-agent rodando, o knowledge base fica defasado. Cadência = autonomia crescente do squad.
 
 ---
 
 ## Documentação completa
 
-Ver `Documentacao_Claude/squad-arquitetura-e-evolucao.md` — arquitetura, fluxo, modos de execução, catálogo completo e histórico de evolução v1.0 → v1.9.
+Ver `Documentacao_Claude/squad-arquitetura-e-evolucao.md` — arquitetura, fluxo, modos de execução, catálogo completo e histórico de evolução v1.0 → v1.9.19.
 
 ---
 

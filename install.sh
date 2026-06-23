@@ -14,11 +14,22 @@ if [[ "$1" == "--update" ]]; then
 fi
 
 SQUAD_AGENTS=(
-    "orchestrator" "prompt-engineer" "qa-test-engineer" "product-manager"
-    "executive-storyteller" "business-analyst-financeiro" "financial-systems-architect"
-    "technical-lead" "strategic-memory-manager" "ai-operations-analyst"
-    "context-manager" "payments-economics-analyst" "data-product-strategist"
-    "solution-architect" "executive-reviewer" "research-agent"
+    # Coordenação
+    "orchestrator" "prompt-engineer" "execution-engine" "capability-registry"
+    # Produto e estratégia
+    "product-manager" "business-analyst-financeiro" "executive-storyteller"
+    "executive-reviewer" "ux-researcher"
+    # Arquitetura financeira
+    "financial-systems-architect" "ccb-structuring-engine" "ledger-specialist"
+    "spi-spb-architect" "solution-architect" "technical-lead"
+    # Economics e dados
+    "payments-economics-analyst" "mdr-pricing-analyst" "pnl-modeler"
+    "data-product-strategist"
+    # Execução e qualidade
+    "frontend-developer" "qa-test-engineer"
+    # Memória e operação
+    "context-manager" "strategic-memory-manager" "task-memory-manager"
+    "ai-operations-analyst" "ai-metrics-analyst" "research-agent"
 )
 
 echo ""

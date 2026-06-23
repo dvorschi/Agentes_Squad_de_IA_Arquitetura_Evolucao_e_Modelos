@@ -106,7 +106,7 @@ No Claude Code, rode:
 ```
 /agents
 ```
-Você deve ver os 16 agentes do squad listados.
+Você deve ver os 27 agentes do squad listados.
 
 ---
 
@@ -139,11 +139,40 @@ O instalador sobrescreve apenas os agentes — não toca em context files, memor
 
 ---
 
+## Cadência recomendada pós-instalação
+
+Para squads com maior autonomia, configure rotinas automáticas via Claude Code:
+
+```
+# No Claude Code, acione o schedule para criar rotinas recorrentes:
+/schedule
+```
+
+**Rotinas recomendadas (configurar em claude.ai/code/routines):**
+
+| Rotina | Frequência | O que faz |
+|---|---|---|
+| `research-agent` | Seg-sex 09:30 | Varre BACEN, fintech, Anthropic — gera relatório de inteligência |
+| `operations-log-lembrete` | Seg-sex 09:40 | Gera template datado para registrar sessões do dia |
+| `ai-metrics-analyst` | Segundas 09:40 | Dashboard semanal de KPIs do squad |
+
+---
+
 ## Desinstalação
 
 ```powershell
 # Windows — remover apenas agentes do squad (não toca outros agentes)
-$squadAgents = @("orchestrator","prompt-engineer","qa-test-engineer","product-manager","executive-storyteller","business-analyst-financeiro","financial-systems-architect","technical-lead","strategic-memory-manager","ai-operations-analyst","context-manager","payments-economics-analyst","data-product-strategist","solution-architect","executive-reviewer","research-agent")
+$squadAgents = @(
+    "orchestrator","prompt-engineer","execution-engine","capability-registry",
+    "product-manager","business-analyst-financeiro","executive-storyteller",
+    "executive-reviewer","ux-researcher",
+    "financial-systems-architect","ccb-structuring-engine","ledger-specialist",
+    "spi-spb-architect","solution-architect","technical-lead",
+    "payments-economics-analyst","mdr-pricing-analyst","pnl-modeler","data-product-strategist",
+    "frontend-developer","qa-test-engineer",
+    "context-manager","strategic-memory-manager","task-memory-manager",
+    "ai-operations-analyst","ai-metrics-analyst","research-agent"
+)
 foreach ($a in $squadAgents) {
     Remove-Item "$env:USERPROFILE\.claude\agents\$a.md" -Force -ErrorAction SilentlyContinue
 }
