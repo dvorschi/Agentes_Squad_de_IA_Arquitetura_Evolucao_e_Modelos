@@ -1,7 +1,7 @@
 # Squad de IA — Arquitetura, Evolução e Modelos de Trabalho
 
 > Documento vivo. Descreve o squad de IA de produtos financeiros da BRQ Digital Solutions — sua origem, arquitetura atual, fluxos de trabalho e modelo de governança.
-> Última atualização: 2026-05-23 | Versão atual: v1.9.14
+> Última atualização: 2026-06-22 | Versão atual: v1.9.19
 
 ---
 
@@ -35,6 +35,21 @@ O squad é um conjunto de agentes de IA especializados que trabalham de forma co
 ---
 
 ## 2. Evolução do Squad
+
+### v1.9.19 — 2026-06-22 — Avaliação de Saúde + Melhorias Operacionais
+
+**O que mudou:**
+- Congelamento de features formalmente encerrado (expirou 2026-06-03)
+- Operations log regularizado: 7 entradas adicionadas cobrindo gap de 33 dias (v1.9.11 a v1.9.19)
+- Research-agent schedule reativado (`trig_019Vrhg7KHmHMKVGu9eQr1ZQ`) — estava auto-desativado por erro de acesso ao repo GitHub; corrigido para rodar via WebSearch sem dependência de repo
+- 6 novos padrões documentados em `knowledge/squad-learnings/padroes-e-aprendizados.md` (#8 a #13): arquitetura MobHub tripartite, taxa de ociosidade EV, disciplina de operations log, ciclo cadenciado de aprendizado, verificação de diagnósticos externos de IA, delay anti-rate-limiting Evolution API
+- Knowledge base de pagamentos atualizado com seção completa do MobHub V1.1
+
+**Projetos ativos no período (v1.9.15 a v1.9.18):**
+- MobHub (Edenred): arquitetura técnica V1.0 e V1.1 internalizadas — Trilha A Combustão por Placa, Trilha B EV por QR Code, topologia tripartite (Edenred → TicketLog → Taggy), taxa de ociosidade
+- NOC Monitor Claro Brasil: Dashboard v2 (responsividade mobile) + v3 (WA Contact Picker com Evolution API, envio sequencial anti-rate-limiting)
+
+---
 
 ### v1.0 — Squad Fundacional
 
