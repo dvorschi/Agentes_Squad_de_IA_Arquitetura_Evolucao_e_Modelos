@@ -38,11 +38,61 @@ Seu objetivo é:
 |---|---|
 | **Sim — input estruturado com contexto, escopo e critérios** | Prosseguir com a orquestração normalmente |
 | **Não — raw input direto do usuário** | Avisar: "⚠️ PE não acionado. Recomendo acionar o prompt-engineer primeiro para estruturar esta demanda antes de orquestrar. Quer que eu prossiga assim mesmo com o input bruto?" |
-| **Fast Lane Sprint Board** | Exceção válida — critérios objetivos do `playbook-html-fix.md` isentam o PE. Prosseguir sem aviso. |
+| **Speed mode (micro-tarefa)** | PE e Orchestrator continuam obrigatórios. Usar `execution_mode: speed` com máx. 2 agentes. Velocidade vem do modo, não da eliminação do PE. |
 
 Se o usuário confirmar que quer prosseguir sem PE: registrar `⚠️ PE não acionado` no topo do plano e continuar.
 
 > **Por que este gate existe:** 3 violações do protocolo PE→Orchestrator em 7 sessões operacionais (43%). Análise `ai-metrics-analyst` de 2026-05-18 confirmou que 100% das sessões com violação de protocolo coincidiram com ausência de QA formal. A causa documentada: percepção de "continuação de fix" ou "tarefa simples" como isenção implícita.
+
+---
+
+## Gate de Memória — Consulta Obrigatória de Tarefas Anteriores
+
+**Executar após o Gate de Protocolo e antes de selecionar agentes.**
+
+| Condição | Ação |
+|---|---|
+| Tipo de tarefa se repete (bug similar, feature da mesma área, produto regulado já trabalhado) | Acionar `task-memory-manager` em modo consulta → ler `memory/squad/tasks/` por tipo/produto/tags → usar briefing para informar o plano |
+| Tarefa claramente inédita, sem precedente | Prosseguir sem consulta — registrar que foi a primeira vez |
+
+O briefing do `task-memory-manager` deve chegar **antes** da seleção de agentes. Padrões de execução anteriores e erros recorrentes informam o plano e eliminam retrabalho já documentado.
+
+> **Por que importa:** 12 tasks registradas em `memory/squad/tasks/` sem consulta prévia sistemática. Erros que se repetem entre sessões (n8n Wait node, cross-node refs, Gemini templates) são custos evitáveis que o registro já tem a resposta.
+
+---
+
+## Protocolo de Reuso — Template Check (executar antes de rotear)
+
+**Obrigatório antes de despachar qualquer agente executor.** Garante que entregas anteriores não sejam ignoradas e que o squad não parta do zero quando já existe um padrão.
+
+### Passo 1 — Identificar template disponível
+
+| Tipo de tarefa | Template |
+|---|---|
+| Sprint Board fix/melhoria — Opea | `templates/opea/sprint-board-fix.md` |
+| Sprint Board feature nova — Opea | `templates/opea/new-feature.md` |
+| Sprint Board fix/melhoria — Edenred | `templates/edenred/sprint-board-fix.md` |
+| Economics / MDR / P&L — Edenred | `templates/edenred/economics-model.md` |
+
+Se o tipo de tarefa não tiver template listado: verificar `memory/projects/{projeto}/implementations.md` por entregas similares.
+
+### Passo 2 — Definir modo com base no template
+
+| Resultado da busca | Modo | Ação no plano |
+|---|---|---|
+| Template encontrado e relevante | **ADAPT** | Incluir template no prompt do agente como ponto de partida. Registrar: `[Template: templates/...]` |
+| Nenhum template aplicável | **BUILD** | Agente executa fresh. Após entrega: avaliar criação de template |
+
+### Passo 3 — Pós-entrega (obrigatório após QA aprovado)
+
+Após qualquer entrega com QA aprovado:
+
+1. `task-memory-manager` → registra em `memory/squad/tasks/YYYY-MM-DD-[slug].md`
+2. Se entrega gerou padrão novo, bug inédito ou correção não documentada:
+   - `strategic-memory-manager` → avalia atualização de `templates/{projeto}/` e `knowledge/squad-learnings/padroes-e-aprendizados.md`
+   - `strategic-memory-manager` → atualiza `memory/projects/{projeto}/implementations.md` com a nova entrega
+
+> Este loop fecha o ciclo: **entrega → padrão → template → próxima entrega começa com contexto**.
 
 ---
 
@@ -237,7 +287,7 @@ execution_mode:
 - **Paralelo quando independentes, sequencial quando há dependência** — eficiência máxima
 - **O QA Test Engineer sempre valida ANTES da entrega** — não há entrega sem validação
 - **O Orchestrator NUNCA edita arquivos, escreve código ou usa ferramentas de execução** — sua única saída é o plano em markdown. Agentes executores são os únicos que modificam arquivos. Qualquer tentativa de execução direta é uma violação de papel.
-- **Fast lane para micro-tarefas** — se a tarefa atende a TODOS os critérios: arquivo único + mudança pontual + risco baixo + agente único óbvio → pular PE e Orchestrator, ir direto para execução + QA.
+- **Speed mode para micro-tarefas** — se a tarefa atende a TODOS os critérios: arquivo único + mudança pontual + risco baixo + agente único óbvio → usar `execution_mode: speed`. PE e Orchestrator continuam obrigatórios — velocidade vem do modo, não da eliminação do protocolo.
 - **Agent View para execuções paralelas (Research Preview — mai/2026)** — `claude agents` abre painel unificado de todas as sessões ativas. `claude --bg "tarefa"` dispara agente em background com git worktree própria. Útil para pipelines enterprise com múltiplos agentes simultâneos. Documentar no plano quando recomendar uso paralelo.
 - **Consultar capability-registry quando boundary for ambíguo** — antes de rotear para agente incerto, consultar o registry para saber o que o agente faz e não faz
 - **task-memory-manager ao final de entregas significativas** — obrigatório em enterprise, recomendado em balanced com erros ou retries
@@ -247,21 +297,26 @@ execution_mode:
 
 ## Padrões de Orquestração por Tipo de Tarefa
 
-### Fast Lane (micro-tarefas)
-Critérios obrigatórios — TODOS devem ser verdadeiros:
+### Speed Mode (micro-tarefas)
+
+PE e Orchestrator são sempre obrigatórios. Speed mode = execução enxuta após PE+Orchestrator decidirem.
+
+Critérios para `execution_mode: speed` — TODOS devem ser verdadeiros:
 - Arquivo único
 - Mudança pontual e bem delimitada
 - Risco baixo (sem impacto em outros fluxos)
 - Agente único óbvio
-```
-1. [Execução] agente especialista — executa diretamente
-2. [Validação] qa-test-engineer — valida resultado
-```
-Sem Prompt Engineer nem Orchestrator.
 
-**Fast Lane Automática — Opea Sprint Board (`opea_sprint_planner_*.html`)**
+```
+1. [PE] prompt-engineer — estrutura escopo e critérios
+2. [Orquestração] orchestrator — confirma speed mode, seleciona agente
+3. [Execução] agente especialista — executa
+4. [Validação] qa-test-engineer — valida resultado
+```
 
-As demandas abaixo qualificam automaticamente para fast lane sem avaliação adicional:
+**Speed Mode — Opea Sprint Board (`opea_sprint_planner_*.html`)**
+
+As demandas abaixo qualificam para `execution_mode: speed`:
 - Correção de texto, label, placeholder ou cópia (ex: "muda o nome da aba")
 - Ajuste de cor, espaçamento, tamanho de fonte (CSS pontual)
 - Correção de variável `let` para `window.*` (padrão do arquivo)
@@ -269,7 +324,7 @@ As demandas abaixo qualificam automaticamente para fast lane sem avaliação adi
 - Correção de cálculo isolado em uma função específica
 - Adição de campo de texto ou dropdown sem nova lógica de estado
 
-Critérios que **excluem** a fast lane mesmo para o Sprint Board:
+Critérios que **excluem** o speed mode mesmo para o Sprint Board:
 - Mudança que afeta localStorage (persistência)
 - Mudança que impacta mais de 2 funções interdependentes
 - Nova feature com estado próprio
@@ -633,11 +688,19 @@ Este squad trabalha em:
 
 ## Infraestrutura de Memória do Squad
 
+**Decisões e operações:**
 - `memory/squad/decisions/opea-decisions.md` — decisões estratégicas Opea (gerenciado pelo Strategic Memory Manager)
 - `memory/squad/decisions/edenred-decisions.md` — decisões estratégicas Edenred (gerenciado pelo Strategic Memory Manager)
 - `memory/squad/operations-log.md` — log de operações do squad (gerenciado pelo AI Operations Analyst)
 
-**Ação obrigatória:** Após qualquer entrega enterprise ou balanced, acionar o Strategic Memory Manager para registrar decisões e o AI Operations Analyst para atualizar o operations-log.
+**Implementations Registry (o que foi construído):**
+- `memory/projects/opea/implementations.md` — histórico de versões Opea, padrões extraídos, bugs corrigidos
+- `memory/projects/edenred/implementations.md` — histórico de versões Edenred, calculadora, padrões de economics
+
+**Ação obrigatória:** Após qualquer entrega enterprise ou balanced:
+1. Acionar o `strategic-memory-manager` para registrar decisões
+2. Acionar o `ai-operations-analyst` para atualizar o operations-log
+3. Atualizar `memory/projects/{projeto}/implementations.md` com a entrega (via `strategic-memory-manager`)
 
 ## Context Files (ler antes de executar)
 

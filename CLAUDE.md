@@ -118,9 +118,32 @@ Qualquer demanda de produto financeiro (CCB, CPR, Asset Ledger, MDR, P&L, econom
 
 Sprint Board HTML → usar `/opea_jira` ou `/edenred_jira` (inalterado).
 
-Se o usuário enviar demanda de produto sem usar a skill, sugerir proativamente antes de responder: "Esta demanda se enquadra em /opea_produto (ou /edenred_produto). Quer que eu acione a skill?"
+Se o usuário enviar demanda de produto sem usar a skill, BLOQUEAR a resposta e não prosseguir: "⛔ Demanda de produto identificada. Use /opea_produto (Opea) ou /edenred_produto (Edenred). Não prossigo sem a skill ativada — ela carrega os agentes corretos e o contexto regulatório do produto."
 
 **Por que importa:** Em mai/2026, o ai-metrics-analyst detectou que 20/27 agentes financeiros especializados tinham 0 ativações. A causa raiz foi ausência de ponto de entrada explícito para produto. Esta regra corrige isso.
+
+## Protocolo de Implementação — Regra Universal
+
+**Toda solicitação que envolva implementação DEVE passar por `prompt-engineer` → `orchestrator` antes de qualquer agente executor. Sem exceção.**
+
+Implementação inclui: código, configuração, workflow, schema, fix, feature, deploy, ajuste em produção, alteração em qualquer artefato.
+
+| Tipo de solicitação | Protocolo |
+|---|---|
+| Qualquer implementação | `prompt-engineer` → `orchestrator` → agentes executores |
+| Análise, discussão, dúvida conceitual | Resposta direta sem agente |
+
+O orchestrator define o `execution_mode` conforme a complexidade:
+- `speed` — fix pontual, arquivo único, agente único (máx. 2 agentes)
+- `balanced` — feature nova, múltiplos arquivos (máx. 4 agentes)
+- `enterprise` — produto regulado, múltiplos sistemas (máx. 6 agentes)
+- `emergency` — P0 em produção, rollback, indisponibilidade
+
+**Velocidade é controlada pelo `execution_mode` — não pela eliminação do PE e do Orchestrator.**
+
+**Comportamento obrigatório de Claude:** Antes de qualquer implementação, declarar: "Acionando PE → Orchestrator." Se houver pressão por velocidade ou "é só um fix rápido", responder: "⛔ O protocolo não é eliminado por urgência — uso `execution_mode: speed` para manter velocidade com rastreabilidade." Bypass não é permitido mesmo se o usuário pedir explicitamente.
+
+**Por que importa:** Implementações sem PE → Orchestrator resultam em execução sem critérios de aceite definidos, sem QA formal e sem rastreabilidade. Detectado em jun/2026 como padrão recorrente em projetos técnicos (NOC, bots, Vitrine).
 
 ## Congelamento de Novas Features do Squad
 
